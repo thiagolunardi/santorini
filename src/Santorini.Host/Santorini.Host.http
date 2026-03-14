@@ -1,0 +1,6 @@
+@Santorini.Host_HostAddress = http://localhost:5093
+
+GET {{Santorini.Host_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
