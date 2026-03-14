@@ -10,6 +10,7 @@ namespace Santorini.Host.Services
         Player? GetCurrentPlayer();
         bool Move(string playerName, int workerNumber, int moveX, int moveY, int buildX, int buildY);
         void Reset();
+        IEnumerable<MoveCommand> GetAvailableMoves(string playerName);
     }
 
     public class GameService : IGameService
@@ -57,6 +58,11 @@ namespace Santorini.Host.Services
         public void Reset()
         {
             InitializeGame();
+        }
+
+        public IEnumerable<MoveCommand> GetAvailableMoves(string playerName)
+        {
+            return _game.GetAvailableMoves(playerName);
         }
     }
 }

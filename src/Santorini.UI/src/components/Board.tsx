@@ -17,9 +17,16 @@ interface GameState {
   gameOver: boolean
 }
 
+interface AvailableMove {
+  workerNumber: number
+  moveTo: { x: number, y: number }
+  buildAt: { x: number, y: number }
+}
+
 interface BoardProps {
   gameState: GameState
   currentPlayer: string | null
+  availableMoves: AvailableMove[]
   selectedWorker: { playerName: string, workerNumber: number, x: number, y: number } | null
   setSelectedWorker: (worker: { playerName: string, workerNumber: number, x: number, y: number } | null) => void
   pendingMove: { x: number, y: number } | null
@@ -30,6 +37,7 @@ interface BoardProps {
 export default function Board({ 
   gameState, 
   currentPlayer, 
+  availableMoves,
   selectedWorker, 
   setSelectedWorker,
   pendingMove,
@@ -44,18 +52,37 @@ export default function Board({
       const overY = over.data.current?.y
       const { playerName, workerNumber } = active.data.current
 
-      // Find original position of this worker
-      const cell = gameState.board.find(c => c.workerOwner === playerName && c.workerNumber === workerNumber)
-      if (cell) {
-        setSelectedWorker({ playerName, workerNumber, x: cell.x, y: cell.y })
-        setPendingMove({ x: overX, y: overY })
+      // Validate if this move is allowed for this worker
+      const isValidMove = availableMoves.some(m => 
+        m.workerNumber === workerNumber && 
+        m.moveTo.x === overX && 
+        m.moveTo.y === overY
+      )
+
+      if (isValidMove) {
+        const cell = gameState.board.find(c => c.workerOwner === playerName && c.workerNumber === workerNumber)
+        if (cell) {
+          setSelectedWorker({ playerName, workerNumber, x: cell.x, y: cell.y })
+          setPendingMove({ x: overX, y: overY })
+        }
       }
     }
   }
 
   const handleCellClick = (x: number, y: number) => {
-    if (pendingMove) {
-      onMoveComplete(pendingMove.x, pendingMove.y, x, y)
+    if (pendingMove && selectedWorker) {
+      // Validate if building here is allowed for the pending move
+      const isValidBuild = availableMoves.some(m => 
+        m.workerNumber === selectedWorker.workerNumber && 
+        m.moveTo.x === pendingMove.x && 
+        m.moveTo.y === pendingMove.y &&
+        m.buildAt.x === x &&
+        m.buildAt.y === y
+      )
+
+      if (isValidBuild) {
+        onMoveComplete(pendingMove.x, pendingMove.y, x, y)
+      }
     }
   }
 
@@ -72,6 +99,24 @@ export default function Board({
           const isPendingMoveTarget = pendingMove?.x === cell.x && pendingMove?.y === cell.y
           const isWorkerHere = cell.hasWorker
           
+          let isHighlight = false
+          if (pendingMove && selectedWorker) {
+            // Highlight possible build locations
+            isHighlight = availableMoves.some(m => 
+              m.workerNumber === selectedWorker.workerNumber && 
+              m.moveTo.x === pendingMove.x && 
+              m.moveTo.y === pendingMove.y &&
+              m.buildAt.x === cell.x &&
+              m.buildAt.y === cell.y
+            )
+          } else {
+            // Highlight possible move locations for ANY worker of the current player
+            isHighlight = availableMoves.some(m => 
+              m.moveTo.x === cell.x && 
+              m.moveTo.y === cell.y
+            )
+          }
+          
           return (
             <Cell 
               key={`${cell.x}-${cell.y}`} 
@@ -80,6 +125,7 @@ export default function Board({
               level={cell.level}
               onClick={() => handleCellClick(cell.x, cell.y)}
               isPendingMove={isPendingMoveTarget}
+              isHighlight={isHighlight}
             >
               {isWorkerHere && (
                 <Worker 

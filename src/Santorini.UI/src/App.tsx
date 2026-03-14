@@ -17,9 +17,16 @@ interface GameState {
   gameOver: boolean
 }
 
+interface AvailableMove {
+  workerNumber: number
+  moveTo: { x: number, y: number }
+  buildAt: { x: number, y: number }
+}
+
 function App() {
   const [gameState, setGameState] = useState<GameState | null>(null)
   const [currentPlayer, setCurrentPlayer] = useState<string | null>(null)
+  const [availableMoves, setAvailableMoves] = useState<AvailableMove[]>([])
   const [selectedWorker, setSelectedWorker] = useState<{ playerName: string, workerNumber: number, x: number, y: number } | null>(null)
   const [pendingMove, setPendingMove] = useState<{ x: number, y: number } | null>(null)
 
@@ -29,6 +36,7 @@ function App() {
       setGameState(stateRes.data)
       const turnRes = await axios.get('/game/turn')
       setCurrentPlayer(turnRes.data.currentPlayer)
+      setAvailableMoves(turnRes.data.availableMoves || [])
     } catch (error) {
       console.error('Error fetching game state:', error)
     }
@@ -86,6 +94,7 @@ function App() {
       <Board 
         gameState={gameState} 
         currentPlayer={currentPlayer}
+        availableMoves={availableMoves}
         selectedWorker={selectedWorker}
         setSelectedWorker={setSelectedWorker}
         pendingMove={pendingMove}

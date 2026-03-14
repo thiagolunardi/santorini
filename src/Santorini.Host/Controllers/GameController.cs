@@ -53,7 +53,20 @@ namespace Santorini.Host.Controllers
         {
             var currentPlayer = _gameService.GetCurrentPlayer();
             if (currentPlayer == null) return NotFound("Game over or no players found.");
-            return Ok(new { CurrentPlayer = currentPlayer.Name });
+
+            var availableMoves = _gameService.GetAvailableMoves(currentPlayer.Name)
+                .Select(m => new
+                {
+                    m.WorkerNumber,
+                    MoveTo = new { m.MoveTo.X, m.MoveTo.Y },
+                    BuildAt = new { m.BuildAt.X, m.BuildAt.Y }
+                });
+
+            return Ok(new 
+            { 
+                CurrentPlayer = currentPlayer.Name,
+                AvailableMoves = availableMoves
+            });
         }
 
         [HttpPost("move")]
