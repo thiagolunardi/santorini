@@ -29,7 +29,7 @@ namespace Santorini.Host
             _logger.LogInformation("Ready? Steady! Go!");
             await _gameService.StartGame();
 
-            _logger.LogInformation("Game is over!", _gameService.GetGameReport());
+            _logger.LogInformation("Game is over! {Report}", _gameService.GetGameReport());
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

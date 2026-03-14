@@ -22,7 +22,7 @@ namespace Santorini.Tests
             var board = new Island();
 
             board.Board.Should().NotBeNull();
-            board.Board.Should().HaveCount(25);
+            board.Board.Length.Should().Be(25);
             foreach (var land in board.Board)
             {
                 land.Should().NotBeNull();

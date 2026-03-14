@@ -33,7 +33,7 @@ namespace Santorini.Host
                 {
                     services
                         .AddHostedService<SantoriniGameHostedService>()
-                        .AddSingleton<IFlurlClientFactory, PerHostFlurlClientFactory>()
+                        .AddSingleton<IFlurlClientCache>(_ => new FlurlClientCache())
                         .AddSingleton<IGameService, GameService>()
                         .Configure<GameSettings>(hostContext.Configuration.GetSection(GameSettings.Section));
                 })

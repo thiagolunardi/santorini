@@ -10,7 +10,7 @@ namespace Santorini.Host
     {
         private readonly Game _game;
         private readonly GameSettings _settings;
-        private readonly IFlurlClientFactory _clientFactory;
+        private readonly IFlurlClientCache _clientCache;
         private readonly ILogger<GameService> _logger;
 
         protected PlayerInstance PlayerOne { get; private set; }
@@ -21,7 +21,7 @@ namespace Santorini.Host
 
         public GameService(
             IOptions<GameSettings> settings, 
-            IFlurlClientFactory clientFactory,
+            IFlurlClientCache clientCache,
             ILogger<GameService> logger)
         {
             _settings = settings.Value;
@@ -30,14 +30,14 @@ namespace Santorini.Host
                 throw new SettingsNotValidException(_settings);
 
             _game = new Game();
-            _clientFactory = clientFactory;
+            _clientCache = clientCache;
             _logger = logger;
         }
 
         public void RegisterPlayers()
         {
-            var bluePlayer = new PlayerInstance(_settings.BluePlayer, _clientFactory);
-            var whitePlayer = new PlayerInstance(_settings.WhitePlayer, _clientFactory);
+            var bluePlayer = new PlayerInstance(_settings.BluePlayer, _clientCache);
+            var whitePlayer = new PlayerInstance(_settings.WhitePlayer, _clientCache);
 
             var bluePlayerOk = _game.TryAddPlayer(_settings.BluePlayer.Name);
             if (!bluePlayerOk) throw new AddPlayerException(_settings.BluePlayer.Name);

@@ -11,10 +11,10 @@ namespace Santorini.Host
 
         public string PlayerName => _settings.Name;
 
-        public PlayerInstance(PlayerSettings settings, IFlurlClientFactory clientFactory)
+        public PlayerInstance(PlayerSettings settings, IFlurlClientCache clientCache)
         {
             _settings = settings;
-            _client = clientFactory.Get(_settings.BaseUrl);
+            _client = clientCache.GetOrAdd(_settings.Name, _settings.BaseUrl);
         }
 
         public Task<PlaceWorkersCommand> PlaceWorkersRequestAsync(Game game)
