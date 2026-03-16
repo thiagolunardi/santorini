@@ -1,52 +1,42 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-using Flurl.Http.Configuration;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Santorini.Host.Services;
+using Santorini.Host.Mcp;
+using ModelContextProtocol.AspNetCore;
+using ModelContextProtocol.Server;
 
-namespace Santorini.Host
-{
-    public class Program
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddOpenApi();
+builder.Services.AddSingleton<IGameService, GameService>();
+
+// Add MCP services
+builder.Services.AddMcpServer(options => 
     {
-        public static async Task Main(string[] args)
-        {
-            var host = new HostBuilder()
-                .ConfigureHostConfiguration(configHost =>
-                {
-                    configHost
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("hostsettings.json", optional: true)
-                        .AddEnvironmentVariables(prefix: "PREFIX_")
-                        .AddCommandLine(args);
-                })
-                .ConfigureAppConfiguration((hostContext, configApp) =>
-                {
-                    configApp
-                        .AddJsonFile("appsettings.json", optional: true)
-                        .AddJsonFile($"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json", optional: true)
-                        .AddEnvironmentVariables(prefix: "PREFIX_")
-                        .AddCommandLine(args);
-                })
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services
-                        .AddHostedService<SantoriniGameHostedService>()
-                        .AddSingleton<IFlurlClientFactory, PerHostFlurlClientFactory>()
-                        .AddSingleton<IGameService, GameService>()
-                        .Configure<GameSettings>(hostContext.Configuration.GetSection(GameSettings.Section));
-                })
-                .ConfigureLogging((hostContext, configLogging) =>
-                {
-                    configLogging
-                        .AddConsole()
-                        .AddDebug();
-                })
-                .UseConsoleLifetime()
-                .Build();
+        options.ServerInfo = new() { Name = "Santorini Game Server", Version = "1.0.0" };
+    })
+    .WithHttpTransport()
+    .WithTools<GameMcpTools>();
 
-            await host.RunAsync();
-        }
-    }
+builder.Services.AddScoped<GameMcpTools>();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
 }
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+// Map MCP HTTP endpoint
+app.MapMcp("/mcp");
+
+app.Run();

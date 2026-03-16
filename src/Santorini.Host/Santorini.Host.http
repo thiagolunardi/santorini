@@ -1,0 +1,28 @@
+@Santorini.Host_HostAddress = http://localhost:5093
+
+GET {{Santorini.Host_HostAddress}}/game/state
+Accept: application/json
+
+###
+
+GET {{Santorini.Host_HostAddress}}/game/turn
+Accept: application/json
+
+###
+
+POST {{Santorini.Host_HostAddress}}/game/move
+Content-Type: application/json
+
+{
+  "playerName": "Player1",
+  "workerNumber": 1,
+  "moveToX": 1,
+  "moveToY": 0,
+  "buildAtX": 0,
+  "buildAtY": 0
+}
+
+###
+
+POST {{Santorini.Host_HostAddress}}/game/reset
+Content-Type: application/json
