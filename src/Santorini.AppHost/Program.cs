@@ -1,6 +1,8 @@
+using Projects;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
-var api = builder.AddProject<Projects.Santorini_Host>("api");
+var api = builder.AddProject<Santorini_Host>("api");
 
 builder.AddNpmApp("ui", "../Santorini.UI", "dev")
     .WithReference(api)

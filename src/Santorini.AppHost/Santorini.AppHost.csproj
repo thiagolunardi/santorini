@@ -1,20 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Sdk Name="Aspire.AppHost.Sdk" Version="9.3.0" />
+    <Sdk Name="Aspire.AppHost.Sdk" Version="9.3.0"/>
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <IsAspireHost>true</IsAspireHost>
-    <UserSecretsId>9e20b5de-2b8e-4b72-9aba-santorini-apphost</UserSecretsId>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <IsAspireHost>true</IsAspireHost>
+        <UserSecretsId>9e20b5de-2b8e-4b72-9aba-santorini-apphost</UserSecretsId>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.1.2" />
-    <PackageReference Include="Aspire.Hosting.NodeJs" Version="9.5.2" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Aspire.Hosting.AppHost" Version="13.1.2"/>
+        <PackageReference Include="Aspire.Hosting.NodeJs" Version="9.5.2"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Santorini.Host\Santorini.Host.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Santorini.Host\Santorini.Host.csproj"/>
+    </ItemGroup>
 
 </Project>

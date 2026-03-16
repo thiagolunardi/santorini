@@ -1,113 +1,114 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 
-namespace Santorini
+namespace Santorini;
+
+[DebuggerDisplay(
+    "[{Coord.X} ,{Coord.Y}], Unoccupied: {IsUnoccupied}, Tower: {HasTower}, Worker: {HasWorker}, Level: {LandLevel}")]
+public class Land : IEquatable<Land>
 {
-    [DebuggerDisplay("[{Coord.X} ,{Coord.Y}], Unoccupied: {IsUnoccupied}, Tower: {HasTower}, Worker: {HasWorker}, Level: {LandLevel}")]
-    public class Land : IEquatable<Land>
+    private readonly List<Piece> _pieces;
+    public readonly Coord Coord;
+
+    internal Land(Island island, int x, int y)
     {
-        public readonly Coord Coord;
+        if (!Island.IsValidPosition(x, y))
+            throw new ArgumentOutOfRangeException();
 
-        private readonly List<Piece> _pieces;
-        public Piece[] Pieces => _pieces.ToArray();
+        if (island is null)
+            throw new ArgumentNullException(nameof(island));
 
-        public Island Island { get; }
+        Island = island;
+        Coord = new Coord(x, y);
+        _pieces = new List<Piece>();
+    }
 
-        internal Land(Island island, int x, int y)
-        {
-            if (!Island.IsValidPosition(x, y))
-                throw new ArgumentOutOfRangeException();
+    public Piece[] Pieces => _pieces.ToArray();
 
-            if (island is null)
-                throw new ArgumentNullException(nameof(island));
+    public Island Island { get; }
 
-            Island = island;
-            Coord = new Coord(x, y);
-            _pieces = new List<Piece>();
-        }
+    public bool IsUnoccupied
+        => !HasWorker && !MaxLevelReached;
 
-        public bool TryPutPiece(Piece piece)
-        {
-            if (piece is Tower && (HasTower || HasWorker))
-                return false;
+    public bool HasTower
+        => _pieces.Any(p => p is Tower);
 
-            if (piece is Worker)
-            {
-                if (HasWorker) return false;
+    public Tower Tower
+        => _pieces.SingleOrDefault(p => p is Tower) as Tower;
 
-                var worker = piece as Worker;
+    public bool HasWorker
+        => _pieces.Any(p => p is Worker);
 
-                if (worker.CurrentLand != null && LandLevel > worker.LandLevel + 1)
-                    return false;
-            }
+    public Worker Worker
+        => _pieces.SingleOrDefault(p => p is Worker) as Worker;
 
-            _pieces.Add(piece);
-            piece.SetLand(this);
-
-            return true;
-        }
-
-        public bool TryRemoveWorker(Worker worker)
-        {
-            if(!HasWorker) return false;
-
-            if (!Worker.Equals(worker)) return false;
-
-            _pieces.Remove(Worker as Piece);
-
-            return true;
-        }
-        
-        public bool IsUnoccupied
-            => !HasWorker && !MaxLevelReached;
-
-        public bool HasTower
-            => _pieces.Any(p => p is Tower);
-
-        public Tower Tower
-            => _pieces.SingleOrDefault(p => p is Tower) as Tower;
-
-        public bool HasWorker
-            => _pieces.Any(p => p is Worker);
-
-        public Worker Worker
-            => _pieces.SingleOrDefault(p => p is Worker) as Worker;
-
-        public int LandLevel
-            => HasTower
+    public int LandLevel
+        => HasTower
             ? Tower.Level
             : 0;
 
-        public bool MaxLevelReached
-            => HasTower && Tower.IsComplete;
+    public bool MaxLevelReached
+        => HasTower && Tower.IsComplete;
 
-        public bool Equals(Land other)
-        {
-            if (other is null) return false;
-            return Coord.X == other.Coord.X && Coord.Y == other.Coord.Y;
-        }
+    public bool Equals(Land other)
+    {
+        if (other is null) return false;
+        return Coord.X == other.Coord.X && Coord.Y == other.Coord.Y;
+    }
 
-        public override bool Equals(object obj)
+    public bool TryPutPiece(Piece piece)
+    {
+        if (piece is Tower && (HasTower || HasWorker))
+            return false;
+
+        if (piece is Worker)
         {
-            if (obj is null || obj.GetType() != GetType())
+            if (HasWorker) return false;
+
+            var worker = piece as Worker;
+
+            if (worker.CurrentLand != null && LandLevel > worker.LandLevel + 1)
                 return false;
-
-            return (obj as Land).Equals(this);
         }
 
-        public static bool operator ==(Land land1, Land land2)
-        {
-            if (land1 is null && land2 is null) return true;
-            if (land1 is null || land2 is null) return false;
-            return land1.Coord == land2.Coord;
-        }
+        _pieces.Add(piece);
+        piece.SetLand(this);
 
-        public static bool operator !=(Land land1, Land land2)
-            => !(land1 == land2);
+        return true;
+    }
 
-        public override int GetHashCode()
-            => Coord.GetHashCode();
+    public bool TryRemoveWorker(Worker worker)
+    {
+        if (!HasWorker) return false;
+
+        if (!Worker.Equals(worker)) return false;
+
+        _pieces.Remove(Worker);
+
+        return true;
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is null || obj.GetType() != GetType())
+            return false;
+
+        return (obj as Land).Equals(this);
+    }
+
+    public static bool operator ==(Land land1, Land land2)
+    {
+        if (land1 is null && land2 is null) return true;
+        if (land1 is null || land2 is null) return false;
+        return land1.Coord == land2.Coord;
+    }
+
+    public static bool operator !=(Land land1, Land land2)
+    {
+        return !(land1 == land2);
+    }
+
+    public override int GetHashCode()
+    {
+        return Coord.GetHashCode();
     }
 }

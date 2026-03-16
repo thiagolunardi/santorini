@@ -1,23 +1,20 @@
-﻿using System;
+﻿namespace Santorini;
 
-namespace Santorini
+public class Player
 {
-    public class Player
+    internal Player(string name)
     {
-        public string Name { get; }
-        
-        public Worker[] Workers { get; }
+        if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-        internal Player(string name)
+        Name = name;
+        Workers = new[]
         {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-
-            Name = name;
-            Workers = new[]
-            {
-                new Worker(this, 1),
-                new Worker(this, 2),
-            };
-        }
+            new Worker(this, 1),
+            new Worker(this, 2)
+        };
     }
+
+    public string Name { get; }
+
+    public Worker[] Workers { get; }
 }

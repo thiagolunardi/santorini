@@ -1,21 +1,20 @@
-﻿namespace Santorini
+﻿namespace Santorini;
+
+public class Tower : Piece
 {
-    public class Tower : Piece
+    internal Tower()
     {
-        public int Level { get; private set; }
+        Level = 1;
+    }
 
-        internal Tower()
-        {
-            Level = 1;
-        }
+    public int Level { get; private set; }
 
-        public int RaiseLevel()
-        {
-            if (!IsComplete) Level++;
-            return Level;
-        }
+    public bool IsComplete
+        => Level >= 4;
 
-        public bool IsComplete
-            => Level >= 4;
+    public int RaiseLevel()
+    {
+        if (!IsComplete) Level++;
+        return Level;
     }
 }

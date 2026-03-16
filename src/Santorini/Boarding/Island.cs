@@ -1,56 +1,59 @@
-﻿namespace Santorini
+﻿namespace Santorini;
+
+public class Island
 {
-    public class Island
+    public readonly Land[,] Board;
+
+    internal Island()
     {
-        public readonly Land[,] Board;
+        Board = new Land[5, 5];
 
-        public static (int X, int Y) MaxPositions => (4, 4);
+        for (var x = 0; x <= 4; x++)
+        for (var y = 0; y <= 4; y++)
+            Board[x, y] = new Land(this, x, y);
+    }
 
-        internal Island()
-        {
-            Board = new Land[5, 5];
+    public static (int X, int Y) MaxPositions => (4, 4);
 
-            for (var x = 0; x <= 4; x++)
-                for (var y = 0; y <= 4; y++)
-                    Board[x, y] = new Land(this, x, y);
-        }
+    //public bool IsEmpty(int posX, int posY)
+    //    => Board[posX, posY].IsEmpty;
 
-        //public bool IsEmpty(int posX, int posY)
-        //    => Board[posX, posY].IsEmpty;
+    public bool IsUnoccupied(int posX, int posY)
+    {
+        return Board[posX, posY].IsUnoccupied;
+    }
 
-        public bool IsUnoccupied(int posX, int posY)
-            => Board[posX, posY].IsUnoccupied;
+    public bool TryGetLand(int posX, int posY, out Land land)
+    {
+        land = default;
+        if (!IsValidPosition(posX, posY)) return false;
 
-        public bool TryGetLand(int posX, int posY, out Land land)
-        {
-            land = default(Land);
-            if (!IsValidPosition(posX, posY)) return false;
+        land = Board[posX, posY];
 
-            land = Board[posX, posY];
+        return true;
+    }
 
-            return true;
-        }
+    public bool TryAddPiece(Piece piece, int posX, int posY)
+    {
+        if (TryGetLand(posX, posY, out var land))
+            return land.TryPutPiece(piece);
 
-        public bool TryAddPiece(Piece piece, int posX, int posY)
-        {
-            if (TryGetLand(posX, posY, out var land))
-                return land.TryPutPiece(piece);
+        return false;
+    }
 
-            return false;
-        }    
+    public Worker GetWorker(string playerName, int workerNumber)
+    {
+        foreach (var land in Board)
+            if (land.HasWorker
+                && land.Worker.Player.Name == playerName
+                && land.Worker.Number == workerNumber)
+                return land.Worker;
+        return null;
+    }
 
-        public Worker GetWorker(string playerName, int workerNumber)
-        {
-            foreach (var land in Board)
-                if (land.HasWorker 
-                    && land.Worker.Player.Name == playerName 
-                    && land.Worker.Number == workerNumber)
-                    return land.Worker;
-            return null;
-        }
-
-        public static bool IsValidPosition(int posX, int posY)
-            => posX >= 0 && posY >= 0
-            && posX <= MaxPositions.X && posY <= MaxPositions.Y;
+    public static bool IsValidPosition(int posX, int posY)
+    {
+        return posX >= 0 && posY >= 0
+                         && posX <= MaxPositions.X && posY <= MaxPositions.Y;
     }
 }

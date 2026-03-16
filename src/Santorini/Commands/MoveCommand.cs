@@ -1,47 +1,44 @@
-﻿using System;
+﻿namespace Santorini;
 
-namespace Santorini
+public class MoveCommand
 {
-    public class MoveCommand
+    public MoveCommand(string playerName, int workerNumber, Coord moveTo, Coord buildAt)
     {
-        public Coord MoveTo { get; private set; }
-        public Coord BuildAt { get; private set; }
+        if (moveTo is null) throw new ArgumentNullException(nameof(moveTo));
+        if (buildAt is null) throw new ArgumentNullException(nameof(buildAt));
 
-        public string PlayerName { get; private set; }
-        public int WorkerNumber { get; private set; }
+        PlayerName = playerName;
+        WorkerNumber = workerNumber;
+        MoveTo = moveTo;
+        BuildAt = buildAt;
+    }
 
-        public MoveCommand(string playerName, int workerNumber, Coord moveTo, Coord buildAt)
+    public Coord MoveTo { get; }
+    public Coord BuildAt { get; }
+
+    public string PlayerName { get; }
+    public int WorkerNumber { get; }
+
+    public bool IsValid
+    {
+        get
         {
-            if (moveTo is null) throw new ArgumentNullException(nameof(moveTo));
-            if (buildAt is null) throw new ArgumentNullException(nameof(buildAt));
+            if (string.IsNullOrEmpty(PlayerName))
+                return false;
 
-            PlayerName = playerName;
-            WorkerNumber = workerNumber;
-            MoveTo = moveTo;
-            BuildAt = buildAt;
-        }
+            if (WorkerNumber < 1 || WorkerNumber > 2)
+                return false;
 
-        public bool IsValid
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(PlayerName))
-                    return false;
+            if (MoveTo.Equals(BuildAt))
+                return false;
 
-                if (WorkerNumber < 1 || WorkerNumber > 2)
-                    return false;
+            if (!MoveTo.IsValid)
+                return false;
 
-                if (MoveTo.Equals(BuildAt))
-                    return false;
+            if (!BuildAt.IsValid)
+                return false;
 
-                if (!MoveTo.IsValid)
-                    return false;
-
-                if (!BuildAt.IsValid)
-                    return false;
-
-                return true;
-            }
+            return true;
         }
     }
 }

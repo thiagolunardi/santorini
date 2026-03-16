@@ -1,8 +1,5 @@
-﻿using System;
+﻿namespace Santorini;
 
-namespace Santorini
+public class InvalidPositionException : Exception
 {
-    public class InvalidPositionException : Exception
-    {
-    }
 }

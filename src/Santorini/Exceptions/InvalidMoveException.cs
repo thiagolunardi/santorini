@@ -1,6 +1,5 @@
-﻿using System;
+﻿namespace Santorini;
 
-namespace Santorini
+public class InvalidMoveException : Exception
 {
-    public class InvalidMoveException : Exception { }
 }

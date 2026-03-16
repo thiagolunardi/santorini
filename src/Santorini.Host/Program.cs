@@ -1,7 +1,6 @@
-using Santorini.Host.Services;
+using ModelContextProtocol.Protocol;
 using Santorini.Host.Mcp;
-using ModelContextProtocol.AspNetCore;
-using ModelContextProtocol.Server;
+using Santorini.Host.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +14,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddSingleton<IGameService, GameService>();
 
 // Add MCP services
-builder.Services.AddMcpServer(options => 
+builder.Services.AddMcpServer(options =>
     {
-        options.ServerInfo = new() { Name = "Santorini Game Server", Version = "1.0.0" };
+        options.ServerInfo = new Implementation { Name = "Santorini Game Server", Version = "1.0.0" };
     })
     .WithHttpTransport()
     .WithTools<GameMcpTools>();
@@ -27,10 +26,7 @@ builder.Services.AddScoped<GameMcpTools>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+if (app.Environment.IsDevelopment()) app.MapOpenApi();
 
 app.UseAuthorization();
 
