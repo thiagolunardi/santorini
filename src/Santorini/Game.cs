@@ -154,18 +154,39 @@ namespace Santorini
             var worker = player.Workers.SingleOrDefault(b => b.Number == command.WorkerNumber);
             if (worker is null) return false;
 
-            // validate if worker can move to destination
-            if (Island.TryGetLand(command.MoveTo.X, command.MoveTo.Y, out var moveToLand)
-                && moveToLand.IsUnoccupied)
-            {
-                // validate if worker can build after moving
-                if (Island.TryGetLand(command.BuildAt.X, command.BuildAt.Y, out var buildAtLand))
-                {
-                    return buildAtLand.IsUnoccupied || buildAtLand == worker.CurrentLand;
-                }
-            }
+            if (worker.CurrentLand is null) return false;
 
-            return false;
+            // validate move destination
+            if (!Island.TryGetLand(command.MoveTo.X, command.MoveTo.Y, out var moveToLand))
+                return false;
+
+            // moveTo must be unoccupied (no worker, no dome) and not the worker's current land
+            if (!moveToLand.IsUnoccupied || moveToLand == worker.CurrentLand) return false;
+
+            // moveTo must be adjacent (within 1 step) to the worker's current position
+            var moveDx = Math.Abs(worker.CurrentLand.Coord.X - moveToLand.Coord.X);
+            var moveDy = Math.Abs(worker.CurrentLand.Coord.Y - moveToLand.Coord.Y);
+            if (moveDx > 1 || moveDy > 1) return false;
+
+            // moveTo must not be more than 1 level higher than current level (climb limit)
+            if (moveToLand.LandLevel > worker.LandLevel + 1) return false;
+
+            // validate build destination
+            if (!Island.TryGetLand(command.BuildAt.X, command.BuildAt.Y, out var buildAtLand))
+                return false;
+
+            // buildAt must be adjacent to the post-move position (within 1 step of moveTo)
+            var buildDx = Math.Abs(moveToLand.Coord.X - buildAtLand.Coord.X);
+            var buildDy = Math.Abs(moveToLand.Coord.Y - buildAtLand.Coord.Y);
+            if (buildDx > 1 || buildDy > 1) return false;
+
+            // buildAt must not be at max level (dome)
+            if (buildAtLand.MaxLevelReached) return false;
+
+            // buildAt must not have another worker (worker's own current land is allowed since it will be vacated)
+            if (buildAtLand.HasWorker && buildAtLand != worker.CurrentLand) return false;
+
+            return true;
         }
     }
 }
