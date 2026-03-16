@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using System.Linq;
-using Santorini;
+using Santorini.Host.Models;
 using Santorini.Host.Services;
 
 namespace Santorini.Host.Controllers
@@ -21,56 +20,7 @@ namespace Santorini.Host.Controllers
         public IActionResult GetState()
         {
             var game = _gameService.GetGame();
-            var gameState = MapGameToState(game);
-            return Ok(gameState);
-        }
-
-        private static GameStateDto MapGameToState(Game game)
-        {
-            var board = new List<BoardCellDto>();
-
-            for (int i = 0; i < 5; i++)
-            {
-                for (int j = 0; j < 5; j++)
-                {
-                    var l = game.Island.Board[i, j];
-                    board.Add(new BoardCellDto
-                    {
-                        X = i,
-                        Y = j,
-                        Level = l.LandLevel,
-                        HasWorker = l.HasWorker,
-                        WorkerOwner = l.Worker?.Player.Name,
-                        WorkerNumber = l.Worker?.Number
-                    });
-                }
-            }
-
-            return new GameStateDto
-            {
-                Board = board,
-                Players = game.Players.Select(p => p.Name).ToArray(),
-                Winner = game.Winner?.Name,
-                GameOver = game.GameIsOver
-            };
-        }
-
-        private sealed class BoardCellDto
-        {
-            public int X { get; set; }
-            public int Y { get; set; }
-            public int Level { get; set; }
-            public bool HasWorker { get; set; }
-            public string? WorkerOwner { get; set; }
-            public int? WorkerNumber { get; set; }
-        }
-
-        private sealed class GameStateDto
-        {
-            public List<BoardCellDto> Board { get; set; } = new List<BoardCellDto>();
-            public string[] Players { get; set; } = new string[0];
-            public string? Winner { get; set; }
-            public bool GameOver { get; set; }
+            return Ok(GameStateDto.FromGame(game));
         }
 
         [HttpGet("turn")]

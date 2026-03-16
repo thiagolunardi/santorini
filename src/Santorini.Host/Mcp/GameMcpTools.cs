@@ -1,7 +1,7 @@
 using System.ComponentModel;
-using System.Collections.Generic;
 using System.Linq;
 using ModelContextProtocol.Server;
+using Santorini.Host.Models;
 using Santorini.Host.Services;
 
 namespace Santorini.Host.Mcp
@@ -18,34 +18,10 @@ namespace Santorini.Host.Mcp
 
         [McpServerTool]
         [Description("Gets the current state of the Santorini board, including worker positions and building levels.")]
-        public object GetState()
+        public GameStateDto GetState()
         {
             var game = _gameService.GetGame();
-            var board = new List<object>();
-            for (int i = 0; i < 5; i++)
-            {
-                for (int j = 0; j < 5; j++)
-                {
-                    var l = game.Island.Board[i, j];
-                    board.Add(new
-                    {
-                        X = i,
-                        Y = j,
-                        Level = l.LandLevel,
-                        HasWorker = l.HasWorker,
-                        WorkerOwner = l.Worker?.Player.Name,
-                        WorkerNumber = l.Worker?.Number
-                    });
-                }
-            }
-
-            return new
-            {
-                Board = board,
-                Players = game.Players.Select(p => p.Name).ToArray(),
-                Winner = game.Winner?.Name,
-                GameOver = game.GameIsOver
-            };
+            return GameStateDto.FromGame(game);
         }
 
         [McpServerTool]
@@ -96,3 +72,4 @@ namespace Santorini.Host.Mcp
         }
     }
 }
+

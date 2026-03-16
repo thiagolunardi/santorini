@@ -20,11 +20,21 @@ export default function Cell({ x, y, level, children, onClick, isPendingMove, is
   const pendingClass = isPendingMove ? 'pending-move' : ''
   const highlightClass = isHighlight ? 'highlight' : ''
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault()
+      onClick()
+    }
+  }
+
   return (
     <div 
       ref={setNodeRef}
       className={`cell ${levelClass} ${isOver ? 'over' : ''} ${pendingClass} ${highlightClass}`}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
+      onKeyDown={onClick ? handleKeyDown : undefined}
     >
       {children}
       {level > 0 && level < 4 && <div className="level-indicator">{level}</div>}

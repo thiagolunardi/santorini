@@ -55,7 +55,7 @@ namespace Santorini
 
                         if (!Island.IsValidPosition(moveX, moveY)) continue;
 
-                        // Try all 8 adjacent cells for build (relative to move position)
+                        // Try all 8 adjacent cells for build (relative to post-move position)
                         for (int bdx = -1; bdx <= 1; bdx++)
                         {
                             for (int bdy = -1; bdy <= 1; bdy++)
@@ -67,7 +67,8 @@ namespace Santorini
 
                                 if (!Island.IsValidPosition(buildX, buildY)) continue;
 
-                                var command = new MoveCommand(playerName, worker.Number, new Coord(moveX, moveY), new Coord(buildX, buildY));
+                                // Use canonical player name to ensure case-sensitive matching downstream
+                                var command = new MoveCommand(player.Name, worker.Number, new Coord(moveX, moveY), new Coord(buildX, buildY));
                                 if (IsMoveCommandAllowed(command))
                                 {
                                     yield return command;
@@ -152,20 +153,28 @@ namespace Santorini
             if (player is null) return false;
 
             var worker = player.Workers.SingleOrDefault(b => b.Number == command.WorkerNumber);
-            if (worker is null) return false;
+            if (worker is null || worker.CurrentLand is null) return false;
 
-            // validate if worker can move to destination
-            if (Island.TryGetLand(command.MoveTo.X, command.MoveTo.Y, out var moveToLand)
-                && moveToLand.IsUnoccupied)
-            {
-                // validate if worker can build after moving
-                if (Island.TryGetLand(command.BuildAt.X, command.BuildAt.Y, out var buildAtLand))
-                {
-                    return buildAtLand.IsUnoccupied || buildAtLand == worker.CurrentLand;
-                }
-            }
+            var currentLand = worker.CurrentLand;
 
-            return false;
+            // validate move destination is adjacent (within 1 step in each direction)
+            var moveDx = Math.Abs(currentLand.Coord.X - command.MoveTo.X);
+            var moveDy = Math.Abs(currentLand.Coord.Y - command.MoveTo.Y);
+            if (moveDx > 1 || moveDy > 1) return false;
+
+            // validate if worker can move to destination (unoccupied, not capped, climb at most 1 level)
+            if (!Island.TryGetLand(command.MoveTo.X, command.MoveTo.Y, out var moveToLand)) return false;
+            if (!moveToLand.IsUnoccupied) return false;
+            if (moveToLand.LandLevel - currentLand.LandLevel > 1) return false;
+
+            // validate build destination is adjacent to the POST-MOVE position
+            var buildDx = Math.Abs(command.MoveTo.X - command.BuildAt.X);
+            var buildDy = Math.Abs(command.MoveTo.Y - command.BuildAt.Y);
+            if (buildDx > 1 || buildDy > 1) return false;
+
+            // validate if worker can build after moving (unoccupied or the worker's original cell, not capped)
+            if (!Island.TryGetLand(command.BuildAt.X, command.BuildAt.Y, out var buildAtLand)) return false;
+            return buildAtLand.IsUnoccupied || buildAtLand == currentLand;
         }
     }
 }

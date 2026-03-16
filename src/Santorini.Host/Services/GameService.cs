@@ -16,6 +16,7 @@ namespace Santorini.Host.Services
     public class GameService : IGameService
     {
         private Game _game = null!;
+        private readonly object _lock = new object();
 
         public GameService()
         {
@@ -47,17 +48,23 @@ namespace Santorini.Host.Services
 
         public bool Move(string playerName, int workerNumber, int moveX, int moveY, int buildX, int buildY)
         {
-            var currentPlayer = GetCurrentPlayer();
-            if (currentPlayer == null || !currentPlayer.Name.Equals(playerName, System.StringComparison.InvariantCultureIgnoreCase))
-                return false;
+            lock (_lock)
+            {
+                var currentPlayer = GetCurrentPlayer();
+                if (currentPlayer == null || !currentPlayer.Name.Equals(playerName, System.StringComparison.InvariantCultureIgnoreCase))
+                    return false;
 
-            var command = new MoveCommand(playerName, workerNumber, new Coord(moveX, moveY), new Coord(buildX, buildY));
-            return _game.TryMoveWorker(command);
+                var command = new MoveCommand(currentPlayer.Name, workerNumber, new Coord(moveX, moveY), new Coord(buildX, buildY));
+                return _game.TryMoveWorker(command);
+            }
         }
 
         public void Reset()
         {
-            InitializeGame();
+            lock (_lock)
+            {
+                InitializeGame();
+            }
         }
 
         public IEnumerable<MoveCommand> GetAvailableMoves(string playerName)
