@@ -14,9 +14,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  versionamento:
+  versioning:
     runs-on: ubuntu-latest
-    name: Versionamento
+    name: Versioning
     permissions:
       contents: write
 
@@ -59,7 +59,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
 
   backend-build-and-test:
-    needs: versionamento
+    needs: versioning
     runs-on: ubuntu-latest
     name: Backend Build and Test
 
@@ -115,7 +115,7 @@ jobs:
         if: github.ref != 'refs/heads/main'
 
   backend-lint:
-    needs: versionamento
+    needs: versioning
     runs-on: ubuntu-latest
     name: Backend Lint
 
@@ -137,7 +137,7 @@ jobs:
     if: github.ref != 'refs/heads/main'
 
   frontend-build-and-test:
-    needs: versionamento
+    needs: versioning
     runs-on: ubuntu-latest
     name: Frontend Build and Test
     defaults:
@@ -174,7 +174,7 @@ jobs:
           path: ./src/Santorini.UI/dist
 
   frontend-lint:
-    needs: versionamento
+    needs: versioning
     runs-on: ubuntu-latest
     name: Frontend Lint
     defaults:
@@ -203,7 +203,7 @@ jobs:
 
   dependency-check:
     name: Dependency Check
-    needs: versionamento
+    needs: versioning
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -218,7 +218,7 @@ jobs:
 
   code-security-check:
     name: Code Security Check
-    needs: versionamento
+    needs: versioning
     runs-on: ubuntu-latest
     permissions:
       security-events: write
