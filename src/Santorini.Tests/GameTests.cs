@@ -353,6 +353,147 @@ namespace Santorini.Tests
             game.Winner.Name.Should().Be(player1Name);
         }
 
+        [Fact]
+        public void game_should_refuse_move_command_when_climb_limit_exceeded()
+        {
+            // arrange
+            var game = new Game();
+            var player1Name = _faker.Name.FirstName();
+            var player2Name = _faker.Name.FirstName();
+            game.TryAddPlayer(player1Name);
+            game.TryAddPlayer(player2Name);
+
+            game.TryAddWorker(player1Name, 1, 0, 0);
+            game.TryAddWorker(player1Name, 2, 4, 4);
+            game.TryAddWorker(player2Name, 1, 4, 0);
+            game.TryAddWorker(player2Name, 2, 0, 4);
+
+            // Place a tower at level 2 adjacent to worker 1
+            var tower = new Tower();
+            tower.RaiseLevel(); // level 2
+            game.Island.TryAddPiece(tower, 0, 1);
+
+            // Worker 1 is at level 0, target is level 2 — climb limit is 1
+            var moveCmd = new MoveCommand(player1Name, 1, new Coord(0, 1), new Coord(1, 0));
+
+            // act
+            var success = game.TryMoveWorker(moveCmd);
+
+            // assert
+            success.Should().BeFalse();
+            game.Island.Board[0, 0].HasWorker.Should().BeTrue();
+            game.Island.Board[0, 1].HasWorker.Should().BeFalse();
+        }
+
+        [Fact]
+        public void game_should_refuse_move_command_when_moveto_is_not_adjacent()
+        {
+            // arrange
+            var game = new Game();
+            var player1Name = _faker.Name.FirstName();
+            var player2Name = _faker.Name.FirstName();
+            game.TryAddPlayer(player1Name);
+            game.TryAddPlayer(player2Name);
+
+            game.TryAddWorker(player1Name, 1, 0, 0);
+            game.TryAddWorker(player1Name, 2, 4, 4);
+            game.TryAddWorker(player2Name, 1, 4, 0);
+            game.TryAddWorker(player2Name, 2, 0, 4);
+
+            // moveTo is 2 steps away from worker position
+            var moveCmd = new MoveCommand(player1Name, 1, new Coord(0, 2), new Coord(0, 1));
+
+            // act
+            var success = game.TryMoveWorker(moveCmd);
+
+            // assert
+            success.Should().BeFalse();
+            game.Island.Board[0, 0].HasWorker.Should().BeTrue();
+            game.Island.Board[0, 2].HasWorker.Should().BeFalse();
+        }
+
+        [Fact]
+        public void game_should_refuse_move_command_when_buildAt_is_not_adjacent_to_moveTo()
+        {
+            // arrange
+            var game = new Game();
+            var player1Name = _faker.Name.FirstName();
+            var player2Name = _faker.Name.FirstName();
+            game.TryAddPlayer(player1Name);
+            game.TryAddPlayer(player2Name);
+
+            game.TryAddWorker(player1Name, 1, 0, 0);
+            game.TryAddWorker(player1Name, 2, 4, 4);
+            game.TryAddWorker(player2Name, 1, 4, 0);
+            game.TryAddWorker(player2Name, 2, 0, 4);
+
+            // Worker moves to (0,1), but buildAt (3,3) is not adjacent to (0,1)
+            var moveCmd = new MoveCommand(player1Name, 1, new Coord(0, 1), new Coord(3, 3));
+
+            // act
+            var success = game.TryMoveWorker(moveCmd);
+
+            // assert
+            success.Should().BeFalse();
+            game.Island.Board[0, 0].HasWorker.Should().BeTrue();
+        }
+
+        [Fact]
+        public void GetAvailableMoves_should_not_include_moves_that_exceed_climb_limit()
+        {
+            // arrange
+            var game = new Game();
+            var player1Name = _faker.Name.FirstName();
+            var player2Name = _faker.Name.FirstName();
+            game.TryAddPlayer(player1Name);
+            game.TryAddPlayer(player2Name);
+
+            game.TryAddWorker(player1Name, 1, 0, 0);
+            game.TryAddWorker(player1Name, 2, 4, 4);
+            game.TryAddWorker(player2Name, 1, 4, 0);
+            game.TryAddWorker(player2Name, 2, 0, 4);
+
+            // Place a level-2 tower adjacent to worker 1 at (0,0)
+            var tower = new Tower();
+            tower.RaiseLevel(); // level 2
+            game.Island.TryAddPiece(tower, 0, 1);
+
+            // act
+            var availableMoves = game.GetAvailableMoves(player1Name).ToList();
+
+            // assert: no available move for worker 1 should target (0,1) since it is 2 levels up
+            var movesToLevel2 = availableMoves.Where(m => m.WorkerNumber == 1 && m.MoveTo.X == 0 && m.MoveTo.Y == 1);
+            movesToLevel2.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetAvailableMoves_should_only_include_builds_adjacent_to_moveto()
+        {
+            // arrange
+            var game = new Game();
+            var player1Name = _faker.Name.FirstName();
+            var player2Name = _faker.Name.FirstName();
+            game.TryAddPlayer(player1Name);
+            game.TryAddPlayer(player2Name);
+
+            game.TryAddWorker(player1Name, 1, 0, 0);
+            game.TryAddWorker(player1Name, 2, 4, 4);
+            game.TryAddWorker(player2Name, 1, 4, 0);
+            game.TryAddWorker(player2Name, 2, 0, 4);
+
+            // act
+            var availableMoves = game.GetAvailableMoves(player1Name).ToList();
+
+            // assert: every buildAt must be adjacent (within 1 step) to the moveTo position
+            foreach (var move in availableMoves)
+            {
+                var buildDx = Math.Abs(move.MoveTo.X - move.BuildAt.X);
+                var buildDy = Math.Abs(move.MoveTo.Y - move.BuildAt.Y);
+                buildDx.Should().BeLessThanOrEqualTo(1, because: $"build ({move.BuildAt.X},{move.BuildAt.Y}) must be adjacent to moveTo ({move.MoveTo.X},{move.MoveTo.Y})");
+                buildDy.Should().BeLessThanOrEqualTo(1, because: $"build ({move.BuildAt.X},{move.BuildAt.Y}) must be adjacent to moveTo ({move.MoveTo.X},{move.MoveTo.Y})");
+            }
+        }
+
         private Coord GetEmptyCoord(Game game)
         {
             int x = 0, y = 0;
