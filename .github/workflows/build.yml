@@ -69,8 +69,6 @@ jobs:
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: "10.x"
 
       - name: Restore
         run: |
@@ -84,6 +82,7 @@ jobs:
         run: |
           dotnet test tests/Santorini.UnitTests/Santorini.UnitTests.csproj \
             --no-build --no-restore --configuration Release \
+            --logger "junit;LogFilePath=${{ github.workspace }}/TestResults/unit-test-results.xml" \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=json \
             /p:Exclude="[xunit.*]*" \
@@ -94,6 +93,7 @@ jobs:
         run: |
           dotnet test tests/Santorini.IntegrationTests/Santorini.IntegrationTests.csproj \
             --no-build --no-restore --configuration Release \
+            --logger "junit;LogFilePath=${{ github.workspace }}/TestResults/integration-test-results.xml" \
             /p:CollectCoverage=true \
             /p:MergeWith="${{ github.workspace }}/TestResults/coverage.json" \
             /p:CoverletOutputFormat=opencover \
@@ -105,6 +105,13 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           files: ${{ github.workspace }}/TestResults/coverage.opencover.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+        if: github.ref != 'refs/heads/main'
+
+      - name: Upload test results to Codecov
+        uses: codecov/test-results-action@v1
+        with:
+          files: ${{ github.workspace }}/TestResults/unit-test-results.xml,${{ github.workspace }}/TestResults/integration-test-results.xml
           token: ${{ secrets.CODECOV_TOKEN }}
         if: github.ref != 'refs/heads/main'
 
