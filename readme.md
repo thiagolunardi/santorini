@@ -54,6 +54,39 @@ cd santorini
 dotnet build
 ```
 
+### Run
+
+#### Option A — Full stack with .NET Aspire (Recommended)
+
+The `Santorini.AppHost` project orchestrates both the API and the UI together:
+
+```bash
+dotnet run --project src/Santorini.AppHost
+```
+
+This starts the [.NET Aspire](https://learn.microsoft.com/dotnet/aspire) dashboard (typically at `https://localhost:15888`), which manages the game API and the Vite UI automatically. Node.js is required for the UI to start.
+
+#### Option B — Individual components
+
+**API only** (useful for connecting AI agents via MCP):
+
+```bash
+dotnet run --project src/Santorini.Host
+```
+
+- REST API and MCP endpoint available at `/mcp`
+- OpenAPI docs available at `/openapi/v1.json` (Development mode)
+
+**UI only** (in a separate terminal):
+
+```bash
+cd src/Santorini.UI
+npm install
+npm run dev
+```
+
+> Set the `VITE_API_URL` environment variable to point to the API URL when not using Aspire.
+
 ### Run Tests
 
 ```bash
