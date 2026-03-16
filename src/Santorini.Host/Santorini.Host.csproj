@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Santorini\Santorini.csproj" />
+    <ProjectReference Include="..\Santorini.ServiceDefaults\Santorini.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

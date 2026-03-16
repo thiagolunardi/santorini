@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Santorini\Santorini.csproj" />
+    <ProjectReference Include="..\..\src\Santorini\Santorini.csproj" />
   </ItemGroup>
 
 </Project>

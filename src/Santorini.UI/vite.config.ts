@@ -5,9 +5,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    port: parseInt(process.env.PORT ?? '5173'),
     proxy: {
       '/game': {
-        target: 'http://localhost:5093',
+        target: process.env.VITE_API_URL ?? 'http://localhost:5093',
         changeOrigin: true,
       },
     },

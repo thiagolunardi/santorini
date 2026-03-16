@@ -5,6 +5,8 @@ using ModelContextProtocol.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -30,13 +32,13 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
 app.MapControllers();
 
 // Map MCP HTTP endpoint
 app.MapMcp("/mcp");
+
+app.MapDefaultEndpoints();
 
 app.Run();

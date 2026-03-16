@@ -9,7 +9,9 @@
     <File Path="readme.md" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/Santorini.AppHost/Santorini.AppHost.csproj" />
     <Project Path="src/Santorini.Host/Santorini.Host.csproj" />
+    <Project Path="src/Santorini.ServiceDefaults/Santorini.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="tests/Santorini.Tests/Santorini.Tests.csproj" />
