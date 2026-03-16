@@ -52,6 +52,8 @@ export default function Board({
       const overY = over.data.current?.y
       const { playerName, workerNumber } = active.data.current
 
+      if (typeof overX !== 'number' || typeof overY !== 'number') return
+
       // Validate if this move is allowed for this worker
       const isValidMove = availableMoves.some(m => 
         m.workerNumber === workerNumber && 
