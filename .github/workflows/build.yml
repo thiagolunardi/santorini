@@ -213,6 +213,7 @@ jobs:
       - uses: actions/dependency-review-action@v4
         with:
           comment-summary-in-pr: always
+          base-ref: refs/heads/main
 
   code-security-check:
     name: Code Security Check
