@@ -1,4 +1,4 @@
-![CI](https://github.com/thiagolunardi/santorini/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/thiagolunardi/santorini/actions/workflows/ci.yml/badge.svg)](https://github.com/thiagolunardi/santorini/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/thiagolunardi/santorini/graph/badge.svg?token=8AD0163MVG)](https://codecov.io/gh/thiagolunardi/santorini)
 
 # Santorini
