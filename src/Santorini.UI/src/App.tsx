@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import './App.css'
 import Board from './components/Board'
@@ -30,7 +30,7 @@ function App() {
   const [selectedWorker, setSelectedWorker] = useState<{ playerName: string, workerNumber: number, x: number, y: number } | null>(null)
   const [pendingMove, setPendingMove] = useState<{ x: number, y: number } | null>(null)
 
-  const fetchState = async () => {
+  const fetchState = useCallback(async () => {
     try {
       const stateRes = await axios.get('/game/state')
       setGameState(stateRes.data)
@@ -40,13 +40,16 @@ function App() {
     } catch (error) {
       console.error('Error fetching game state:', error)
     }
-  }
+  }, [])
 
   useEffect(() => {
-    fetchState()
+    const timeout = setTimeout(fetchState, 0)
     const interval = setInterval(fetchState, 1000)
-    return () => clearInterval(interval)
-  }, [])
+    return () => {
+      clearTimeout(timeout)
+      clearInterval(interval)
+    }
+  }, [fetchState])
 
   const handleMove = async (moveToX: number, moveToY: number, buildAtX: number, buildAtY: number) => {
     if (!selectedWorker) return
