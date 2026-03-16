@@ -12,7 +12,7 @@
     <Project Path="src/Santorini.Host/Santorini.Host.csproj" />
   </Folder>
   <Folder Name="/Tests/">
-    <Project Path="src/Santorini.Tests/Santorini.Tests.csproj" />
+    <Project Path="tests/Santorini.Tests/Santorini.Tests.csproj" />
   </Folder>
   <Project Path="src/Santorini/Santorini.csproj" />
 </Solution>
