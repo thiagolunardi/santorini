@@ -1,19 +1,18 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Bogus;
 using FluentAssertions;
+using Santorini.Board;
+using Santorini.Commands;
+using Santorini.Pieces;
 using Xunit;
+// ReSharper disable InconsistentNaming
 
-namespace Santorini.Tests;
+namespace Santorini.UnitTests;
 
 [ExcludeFromCodeCoverage]
 public class GameTests
 {
-    private readonly Faker _faker;
-
-    public GameTests()
-    {
-        _faker = new Faker();
-    }
+    private readonly Faker _faker = new();
 
     [Fact]
     public void Create_valid_game()
@@ -81,7 +80,7 @@ public class GameTests
         game.TryAddPlayer(playerName);
 
         // act
-        var success = game.TryAddWorker(playerName, 1, coord.X, coord.Y);
+        var success = game.TryAddWorker(playerName, 1, coord);
 
         // assert
         success.Should().BeFalse();
@@ -99,13 +98,13 @@ public class GameTests
         game.TryAddPlayer(player2Name);
 
         var coord = GetEmptyCoord(game);
-        game.TryAddWorker(player1Name, 1, coord.X, coord.Y);
+        game.TryAddWorker(player1Name, 1, coord);
         coord = GetEmptyCoord(game);
-        game.TryAddWorker(player1Name, 2, coord.X, coord.Y);
+        game.TryAddWorker(player1Name, 2, coord);
         coord = GetEmptyCoord(game);
-        game.TryAddWorker(player2Name, 1, coord.X, coord.Y);
+        game.TryAddWorker(player2Name, 1, coord);
         coord = GetEmptyCoord(game);
-        game.TryAddWorker(player2Name, 2, coord.X, coord.Y);
+        game.TryAddWorker(player2Name, 2, coord);
 
         var unknownName = _faker.Name.FirstName();
         var moveCmd = new MoveCommand(unknownName, 1, GetEmptyCoord(game), GetEmptyCoord(game));
@@ -115,26 +114,6 @@ public class GameTests
 
         // assert
         success.Should().BeFalse();
-    }
-
-    [Fact]
-    public void Cannot_modify_registered_players()
-    {
-        // arrange
-        var game = new Game();
-        var player1Name = _faker.Name.FirstName();
-        var player2Name = _faker.Name.FirstName();
-        game.TryAddPlayer(player1Name);
-        game.TryAddPlayer(player2Name);
-
-        // act
-        var player = game.Players.First();
-        player = null;
-
-        // assert
-        game.Players.Should().HaveCount(2);
-        game.Players.First().Name.Should().Be(player1Name);
-        game.Players.Last().Name.Should().Be(player2Name);
     }
 
     [Fact]
@@ -149,14 +128,14 @@ public class GameTests
 
         // act                        
         var p1b1Coord = GetEmptyCoord(game);
-        var p1Success1 = game.TryAddWorker(player1Name, 1, p1b1Coord.X, p1b1Coord.Y);
+        var p1Success1 = game.TryAddWorker(player1Name, 1, p1b1Coord);
         var p1b2Coord = GetEmptyCoord(game);
-        var p1Success2 = game.TryAddWorker(player1Name, 2, p1b2Coord.X, p1b2Coord.Y);
+        var p1Success2 = game.TryAddWorker(player1Name, 2, p1b2Coord);
 
         var p2b1Coord = GetEmptyCoord(game);
-        var p2Success1 = game.TryAddWorker(player2Name, 1, p2b1Coord.X, p2b1Coord.Y);
+        var p2Success1 = game.TryAddWorker(player2Name, 1, p2b1Coord);
         var p2b2Coord = GetEmptyCoord(game);
-        var p2Success2 = game.TryAddWorker(player2Name, 2, p2b2Coord.X, p2b2Coord.Y);
+        var p2Success2 = game.TryAddWorker(player2Name, 2, p2b2Coord);
 
         // assert
         p1Success1.Should().BeTrue();
@@ -179,12 +158,16 @@ public class GameTests
         p2b1Land.HasWorker.Should().BeTrue();
         p2b2Land.HasWorker.Should().BeTrue();
 
+        p1Worker1.Should().NotBeNull();
         p1Worker1.Number.Should().Be(1);
         p1Worker1.Player.Name.Should().Be(player1Name);
+        p1Worker2.Should().NotBeNull();
         p1Worker2.Number.Should().Be(2);
         p1Worker2.Player.Name.Should().Be(player1Name);
+        p2Worker1.Should().NotBeNull();
         p2Worker1.Number.Should().Be(1);
         p2Worker1.Player.Name.Should().Be(player2Name);
+        p2Worker2.Should().NotBeNull();
         p2Worker2.Number.Should().Be(2);
         p2Worker2.Player.Name.Should().Be(player2Name);
     }
@@ -199,17 +182,17 @@ public class GameTests
         game.TryAddPlayer(player1Name);
         game.TryAddPlayer(player2Name);
 
-        var p1b1Coord = new Coord(0, 0);
-        game.TryAddWorker(player1Name, 1, p1b1Coord.X, p1b1Coord.Y);
-        var p1b2Coord = new Coord(1, 1);
-        game.TryAddWorker(player1Name, 2, p1b2Coord.X, p1b2Coord.Y);
-        var p2b1Coord = new Coord(4, 4);
-        game.TryAddWorker(player2Name, 1, p2b1Coord.X, p2b1Coord.Y);
-        var p2b2Coord = new Coord(3, 3);
-        game.TryAddWorker(player2Name, 2, p2b2Coord.X, p2b2Coord.Y);
+        var p1b1Coord = new Coordinate(0, 0);
+        game.TryAddWorker(player1Name, 1, p1b1Coord);
+        var p1b2Coord = new Coordinate(1, 1);
+        game.TryAddWorker(player1Name, 2, p1b2Coord);
+        var p2b1Coord = new Coordinate(4, 4);
+        game.TryAddWorker(player2Name, 1, p2b1Coord);
+        var p2b2Coord = new Coordinate(3, 3);
+        game.TryAddWorker(player2Name, 2, p2b2Coord);
 
-        var moveTo = new Coord(0, 1);
-        var buildAt = new Coord(0, 0);
+        var moveTo = new Coordinate(0, 1);
+        var buildAt = new Coordinate(0, 0);
         var moveCmd = new MoveCommand(player1Name, 1, moveTo, buildAt);
 
         // act
@@ -221,8 +204,11 @@ public class GameTests
         game.Island.Board[0, 0].HasTower.Should().BeTrue();
         game.Island.Board[0, 1].IsUnoccupied.Should().BeFalse();
         game.Island.Board[0, 1].HasWorker.Should().BeTrue();
-        game.Island.Board[0, 1].Worker.Player.Name.Should().Be(player1Name);
-        game.Island.Board[0, 1].Worker.Number.Should().Be(1);
+
+        var worker = game.Island.Board[0, 1].Worker;
+        worker.Should().NotBeNull();
+        worker.Player.Name.Should().Be(player1Name);
+        worker.Number.Should().Be(1);
     }
 
     [Fact]
@@ -233,8 +219,8 @@ public class GameTests
         var moveCmd = new MoveCommand(
             _faker.Name.FirstName(),
             0,
-            new Coord(0, 0),
-            new Coord(0, 0));
+            new Coordinate(0, 0),
+            new Coordinate(0, 0));
 
         // act 
         var success = game.TryMoveWorker(moveCmd);
@@ -253,8 +239,8 @@ public class GameTests
         var moveCmd = new MoveCommand(
             _faker.Name.FirstName(),
             1,
-            new Coord(0, 0),
-            new Coord(0, 1));
+            new Coordinate(0, 0),
+            new Coordinate(0, 1));
 
         // act 
         var success = game.TryMoveWorker(moveCmd);
@@ -275,17 +261,17 @@ public class GameTests
         game.TryAddPlayer(player1Name);
         game.TryAddPlayer(player2Name);
 
-        var p1b1Coord = new Coord(0, 0);
-        var successP1B1 = game.TryAddWorker(player1Name, 1, p1b1Coord.X, p1b1Coord.Y);
-        var p1b2Coord = new Coord(1, 1);
-        var successP1B2 = game.TryAddWorker(player1Name, 2, p1b2Coord.X, p1b2Coord.Y);
-        var p2b1Coord = new Coord(4, 4);
-        var successP2B1 = game.TryAddWorker(player2Name, 1, p2b1Coord.X, p2b1Coord.Y);
-        var p2b2Coord = new Coord(3, 3);
-        var successP2B2 = game.TryAddWorker(player2Name, 2, p2b2Coord.X, p2b2Coord.Y);
+        var p1b1Coord = new Coordinate(0, 0);
+        var successP1B1 = game.TryAddWorker(player1Name, 1, p1b1Coord);
+        var p1b2Coord = new Coordinate(1, 1);
+        var successP1B2 = game.TryAddWorker(player1Name, 2, p1b2Coord);
+        var p2b1Coord = new Coordinate(4, 4);
+        var successP2B1 = game.TryAddWorker(player2Name, 1, p2b1Coord);
+        var p2b2Coord = new Coordinate(3, 3);
+        var successP2B2 = game.TryAddWorker(player2Name, 2, p2b2Coord);
 
-        var moveTo = new Coord(0, 1);
-        var buildAt = new Coord(0, 0);
+        var moveTo = new Coordinate(0, 1);
+        var buildAt = new Coordinate(0, 0);
         var moveCmd = new MoveCommand(player1Name, 1, moveTo, buildAt);
 
         // act
@@ -301,8 +287,11 @@ public class GameTests
         game.Island.Board[0, 0].HasTower.Should().BeTrue();
         game.Island.Board[0, 1].IsUnoccupied.Should().BeFalse();
         game.Island.Board[0, 1].HasWorker.Should().BeTrue();
-        game.Island.Board[0, 1].Worker.Player.Name.Should().Be(player1Name);
-        game.Island.Board[0, 1].Worker.Number.Should().Be(1);
+        
+        var worker = game.Island.Board[0, 1].Worker;
+        worker.Should().NotBeNull();
+        worker.Player.Name.Should().Be(player1Name);
+        worker.Number.Should().Be(1);
     }
 
     [Fact]
@@ -315,39 +304,40 @@ public class GameTests
         game.TryAddPlayer(player1Name);
         game.TryAddPlayer(player2Name);
 
-        var coord = new Coord(0, 0);
-        game.TryAddWorker(player1Name, 1, coord.X, coord.Y);
-        coord = new Coord(1, 1);
-        game.TryAddWorker(player1Name, 2, coord.X, coord.Y);
-        coord = new Coord(4, 4);
-        game.TryAddWorker(player2Name, 1, coord.X, coord.Y);
-        coord = new Coord(3, 3);
-        game.TryAddWorker(player2Name, 2, coord.X, coord.Y);
+        var coord = new Coordinate(0, 0);
+        game.TryAddWorker(player1Name, 1, coord);
+        coord = new Coordinate(1, 1);
+        game.TryAddWorker(player1Name, 2, coord);
+        coord = new Coordinate(4, 4);
+        game.TryAddWorker(player2Name, 1, coord);
+        coord = new Coordinate(3, 3);
+        game.TryAddWorker(player2Name, 2, coord);
 
         for (var i = 0; i < 3; i++)
         {
             // build level
-            var moveTo = new Coord(0, 1);
-            var buildAt = new Coord(0, 0);
+            var moveTo = new Coordinate(0, 1);
+            var buildAt = new Coordinate(0, 0);
             var moveCmd = new MoveCommand(player1Name, 1, moveTo, buildAt);
             game.TryMoveWorker(moveCmd);
 
             if (i >= 2) break;
 
             // build level
-            moveTo = new Coord(0, 0);
-            buildAt = new Coord(0, 1);
+            moveTo = new Coordinate(0, 0);
+            buildAt = new Coordinate(0, 1);
             moveCmd = new MoveCommand(player1Name, 1, moveTo, buildAt);
             game.TryMoveWorker(moveCmd);
         }
 
         // act
-        var winMoveCmd = new MoveCommand(player1Name, 1, new Coord(0, 0), new Coord(0, 1));
+        var winMoveCmd = new MoveCommand(player1Name, 1, new Coordinate(0, 0), new Coordinate(0, 1));
         var success = game.TryMoveWorker(winMoveCmd);
 
         // assert
         success.Should().BeTrue();
         game.GameIsOver.Should().BeTrue();
+        game.Winner.Should().NotBeNull();
         game.Winner.Name.Should().Be(player1Name);
     }
 
@@ -361,18 +351,18 @@ public class GameTests
         game.TryAddPlayer(player1Name);
         game.TryAddPlayer(player2Name);
 
-        game.TryAddWorker(player1Name, 1, 0, 0);
-        game.TryAddWorker(player1Name, 2, 4, 4);
-        game.TryAddWorker(player2Name, 1, 4, 0);
-        game.TryAddWorker(player2Name, 2, 0, 4);
+        game.TryAddWorker(player1Name, 1, new(0, 0));
+        game.TryAddWorker(player1Name, 2, new(4, 4));
+        game.TryAddWorker(player2Name, 1, new(4, 0));
+        game.TryAddWorker(player2Name, 2, new(0, 4));
 
         // Place a tower at level 2 adjacent to worker 1
         var tower = new Tower();
         tower.RaiseLevel(); // level 2
-        game.Island.TryAddPiece(tower, 0, 1);
+        game.Island.TryAddPiece(tower, new(0, 1));
 
         // Worker 1 is at level 0, target is level 2 — climb limit is 1
-        var moveCmd = new MoveCommand(player1Name, 1, new Coord(0, 1), new Coord(1, 0));
+        var moveCmd = new MoveCommand(player1Name, 1, new Coordinate(0, 1), new Coordinate(1, 0));
 
         // act
         var success = game.TryMoveWorker(moveCmd);
@@ -393,13 +383,13 @@ public class GameTests
         game.TryAddPlayer(player1Name);
         game.TryAddPlayer(player2Name);
 
-        game.TryAddWorker(player1Name, 1, 0, 0);
-        game.TryAddWorker(player1Name, 2, 4, 4);
-        game.TryAddWorker(player2Name, 1, 4, 0);
-        game.TryAddWorker(player2Name, 2, 0, 4);
+        game.TryAddWorker(player1Name, 1, new(0, 0));
+        game.TryAddWorker(player1Name, 2, new(4, 4));
+        game.TryAddWorker(player2Name, 1, new(4, 0));
+        game.TryAddWorker(player2Name, 2, new(0, 4));
 
         // moveTo is 2 steps away from worker position
-        var moveCmd = new MoveCommand(player1Name, 1, new Coord(0, 2), new Coord(0, 1));
+        var moveCmd = new MoveCommand(player1Name, 1, new Coordinate(0, 2), new Coordinate(0, 1));
 
         // act
         var success = game.TryMoveWorker(moveCmd);
@@ -420,13 +410,13 @@ public class GameTests
         game.TryAddPlayer(player1Name);
         game.TryAddPlayer(player2Name);
 
-        game.TryAddWorker(player1Name, 1, 0, 0);
-        game.TryAddWorker(player1Name, 2, 4, 4);
-        game.TryAddWorker(player2Name, 1, 4, 0);
-        game.TryAddWorker(player2Name, 2, 0, 4);
+        game.TryAddWorker(player1Name, 1, new(0, 0));
+        game.TryAddWorker(player1Name, 2, new(4, 4));
+        game.TryAddWorker(player2Name, 1, new(4, 0));
+        game.TryAddWorker(player2Name, 2, new(0, 4));
 
         // Worker moves to (0,1), but buildAt (3,3) is not adjacent to (0,1)
-        var moveCmd = new MoveCommand(player1Name, 1, new Coord(0, 1), new Coord(3, 3));
+        var moveCmd = new MoveCommand(player1Name, 1, new Coordinate(0, 1), new Coordinate(3, 3));
 
         // act
         var success = game.TryMoveWorker(moveCmd);
@@ -446,21 +436,21 @@ public class GameTests
         game.TryAddPlayer(player1Name);
         game.TryAddPlayer(player2Name);
 
-        game.TryAddWorker(player1Name, 1, 0, 0);
-        game.TryAddWorker(player1Name, 2, 4, 4);
-        game.TryAddWorker(player2Name, 1, 4, 0);
-        game.TryAddWorker(player2Name, 2, 0, 4);
+        game.TryAddWorker(player1Name, 1, new(0, 0));
+        game.TryAddWorker(player1Name, 2, new(4, 4));
+        game.TryAddWorker(player2Name, 1, new(4, 0));
+        game.TryAddWorker(player2Name, 2, new(0, 4));
 
         // Place a level-2 tower adjacent to worker 1 at (0,0)
         var tower = new Tower();
         tower.RaiseLevel(); // level 2
-        game.Island.TryAddPiece(tower, 0, 1);
+        game.Island.TryAddPiece(tower, new(0, 1));
 
         // act
         var availableMoves = game.GetAvailableMoves(player1Name).ToList();
 
         // assert: no available move for worker 1 should target (0,1) since it is 2 levels up
-        var movesToLevel2 = availableMoves.Where(m => m.WorkerNumber == 1 && m.MoveTo.X == 0 && m.MoveTo.Y == 1);
+        var movesToLevel2 = availableMoves.Where(m => m is { WorkerNumber: 1, MoveTo: { X: 0, Y: 1 } });
         movesToLevel2.Should().BeEmpty();
     }
 
@@ -474,10 +464,10 @@ public class GameTests
         game.TryAddPlayer(player1Name);
         game.TryAddPlayer(player2Name);
 
-        game.TryAddWorker(player1Name, 1, 0, 0);
-        game.TryAddWorker(player1Name, 2, 4, 4);
-        game.TryAddWorker(player2Name, 1, 4, 0);
-        game.TryAddWorker(player2Name, 2, 0, 4);
+        game.TryAddWorker(player1Name, 1, new(0, 0));
+        game.TryAddWorker(player1Name, 2, new(4, 4));
+        game.TryAddWorker(player2Name, 1, new(4, 0));
+        game.TryAddWorker(player2Name, 2, new(0, 4));
 
         // act
         var availableMoves = game.GetAvailableMoves(player1Name).ToList();
@@ -494,7 +484,7 @@ public class GameTests
         }
     }
 
-    private Coord GetEmptyCoord(Game game)
+    private Coordinate GetEmptyCoord(Game game)
     {
         int x = 0, y = 0;
         while (!game.Island.Board[x, y].IsUnoccupied)
@@ -503,7 +493,7 @@ public class GameTests
             y = _faker.Random.Number(0, 4);
         }
 
-        return new Coord(x, y);
+        return new Coordinate(x, y);
     }
 
     private static Game SetupStandardGame(string player1Name = "Player1", string player2Name = "Player2")
@@ -511,10 +501,10 @@ public class GameTests
         var game = new Game();
         game.TryAddPlayer(player1Name);
         game.TryAddPlayer(player2Name);
-        game.TryAddWorker(player1Name, 1, 0, 0);
-        game.TryAddWorker(player1Name, 2, 4, 4);
-        game.TryAddWorker(player2Name, 1, 0, 4);
-        game.TryAddWorker(player2Name, 2, 4, 0);
+        game.TryAddWorker(player1Name, 1, new (0, 0));
+        game.TryAddWorker(player1Name, 2, new (4, 4));
+        game.TryAddWorker(player2Name, 1, new (0, 4));
+        game.TryAddWorker(player2Name, 2, new (4, 0));
         return game;
     }
 
@@ -526,18 +516,6 @@ public class GameTests
         var moves = game.GetAvailableMoves("unknown").ToList();
 
         moves.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void GetAvailableMoves_is_case_insensitive_for_player_name()
-    {
-        var game = SetupStandardGame();
-
-        var movesExact = game.GetAvailableMoves("Player1").ToList();
-        var movesLower = game.GetAvailableMoves("player1").ToList();
-
-        movesExact.Should().NotBeEmpty();
-        movesLower.Should().HaveSameCount(movesExact);
     }
 
     [Fact]
@@ -587,28 +565,28 @@ public class GameTests
         game.TryAddPlayer("Player1");
         game.TryAddPlayer("Player2");
         // Place workers with space between them
-        game.TryAddWorker("Player1", 1, 0, 0);
-        game.TryAddWorker("Player1", 2, 4, 4);
-        game.TryAddWorker("Player2", 1, 0, 4);
-        game.TryAddWorker("Player2", 2, 4, 0);
+        game.TryAddWorker("Player1", 1, new (0, 0));
+        game.TryAddWorker("Player1", 2, new (4, 4));
+        game.TryAddWorker("Player2", 1, new (0, 4));
+        game.TryAddWorker("Player2", 2, new (4, 0));
 
         // Build a dome (4 levels) at (1, 0) by alternating moves
         // We need to build 4 levels at (1,0). First 3 levels from Player1 worker1,
         // then have Player2 build there too. We simulate by building up manually.
         // Level 1: Player1 moves w1 from (0,0) to (0,1), builds at (1,0)
-        game.TryMoveWorker(new MoveCommand("Player1", 1, new Coord(0, 1), new Coord(1, 0)));
+        game.TryMoveWorker(new MoveCommand("Player1", 1, new Coordinate(0, 1), new Coordinate(1, 0)));
         // Level 2: Player2 moves w1 from (0,4) to (1,4), builds at (1,0) - not adjacent, use (0,4)
-        game.TryMoveWorker(new MoveCommand("Player2", 1, new Coord(1, 4), new Coord(0, 4)));
+        game.TryMoveWorker(new MoveCommand("Player2", 1, new Coordinate(1, 4), new Coordinate(0, 4)));
         // Level 3: Player1 moves w1 from (0,1) to (0,0), builds at (1,0)
-        game.TryMoveWorker(new MoveCommand("Player1", 1, new Coord(0, 0), new Coord(1, 0)));
+        game.TryMoveWorker(new MoveCommand("Player1", 1, new Coordinate(0, 0), new Coordinate(1, 0)));
         // Level 4: Player2 moves w1 from (1,4) to (0,4), builds at (1,0) - not adjacent
-        game.TryMoveWorker(new MoveCommand("Player2", 1, new Coord(0, 4), new Coord(1, 4)));
+        game.TryMoveWorker(new MoveCommand("Player2", 1, new Coordinate(0, 4), new Coordinate(1, 4)));
         // Level 5 (dome): Player1 moves w1 from (0,0) to (0,1), builds at (1,0)
-        game.TryMoveWorker(new MoveCommand("Player1", 1, new Coord(0, 1), new Coord(1, 0)));
+        game.TryMoveWorker(new MoveCommand("Player1", 1, new Coordinate(0, 1), new Coordinate(1, 0)));
         // Player2 turn, keep going
-        game.TryMoveWorker(new MoveCommand("Player2", 1, new Coord(1, 4), new Coord(0, 4)));
+        game.TryMoveWorker(new MoveCommand("Player2", 1, new Coordinate(1, 4), new Coordinate(0, 4)));
         // Dome move: Player1 moves w1 from (0,1) to (0,0), builds at (1,0) - 4th build = dome
-        game.TryMoveWorker(new MoveCommand("Player1", 1, new Coord(0, 0), new Coord(1, 0)));
+        game.TryMoveWorker(new MoveCommand("Player1", 1, new Coordinate(0, 0), new Coordinate(1, 0)));
 
         var moves = game.GetAvailableMoves("Player2").ToList();
         moves.Should().NotContain(m => m.MoveTo.X == 1 && m.MoveTo.Y == 0,
@@ -621,18 +599,18 @@ public class GameTests
         var game = new Game();
         game.TryAddPlayer("Player1");
         game.TryAddPlayer("Player2");
-        game.TryAddWorker("Player1", 1, 0, 0);
-        game.TryAddWorker("Player1", 2, 4, 4);
-        game.TryAddWorker("Player2", 1, 2, 2);
-        game.TryAddWorker("Player2", 2, 4, 0);
+        game.TryAddWorker("Player1", 1, new(0, 0));
+        game.TryAddWorker("Player1", 2, new(4, 4));
+        game.TryAddWorker("Player2", 1, new(2, 2));
+        game.TryAddWorker("Player2", 2, new(4, 0));
 
         // Build 2 levels at (1,0): Player1 w1 at (0,0) can reach (1,0), Player2 w1 at (2,2) can reach (2,1)
         // Build level 1 at (1,1): Player1 move (0,0)->(0,1), build (1,1)
-        game.TryMoveWorker(new MoveCommand("Player1", 1, new Coord(0, 1), new Coord(1, 1)));
+        game.TryMoveWorker(new MoveCommand("Player1", 1, new Coordinate(0, 1), new Coordinate(1, 1)));
         // Build level 2 at (1,1): Player2 move (2,2)->(2,1), build (1,1)
-        game.TryMoveWorker(new MoveCommand("Player2", 1, new Coord(2, 1), new Coord(1, 1)));
+        game.TryMoveWorker(new MoveCommand("Player2", 1, new Coordinate(2, 1), new Coordinate(1, 1)));
         // Build level 3 at (1,1): Player1 move (0,1)->(0,0), build (1,1)
-        game.TryMoveWorker(new MoveCommand("Player1", 1, new Coord(0, 0), new Coord(1, 1)));
+        game.TryMoveWorker(new MoveCommand("Player1", 1, new Coordinate(0, 0), new Coordinate(1, 1)));
         // Now (1,1) has level 3. Player2 w1 is at (2,1) at level 0 - cannot climb 3 levels to (1,1)
         var moves = game.GetAvailableMoves("Player2").ToList();
         moves.Should().NotContain(m => m.MoveTo.X == 1 && m.MoveTo.Y == 1,

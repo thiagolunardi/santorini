@@ -1,25 +1,23 @@
 ﻿using System.Diagnostics;
+using Santorini.Pieces;
 
-namespace Santorini;
+namespace Santorini.Board;
 
 [DebuggerDisplay(
-    "[{Coord.X} ,{Coord.Y}], Unoccupied: {IsUnoccupied}, Tower: {HasTower}, Worker: {HasWorker}, Level: {LandLevel}")]
+    "[{Coordinate.X} ,{Coordinate.Y}], Unoccupied: {IsUnoccupied}, Tower: {HasTower}, Worker: {HasWorker}, Level: {LandLevel}")]
 public class Land : IEquatable<Land>
 {
     private readonly List<Piece> _pieces;
-    public readonly Coord Coord;
+    public readonly Coordinate Coordinate;
 
-    internal Land(Island island, int x, int y)
+    internal Land(Island island, Coordinate coordinate)
     {
-        if (!Island.IsValidPosition(x, y))
-            throw new ArgumentOutOfRangeException();
-
-        if (island is null)
-            throw new ArgumentNullException(nameof(island));
+        ArgumentNullException.ThrowIfNull(island);
+        Island.AssertCoordinates(coordinate.X, coordinate.Y);
 
         Island = island;
-        Coord = new Coord(x, y);
-        _pieces = new List<Piece>();
+        Coordinate = coordinate;
+        _pieces = [];
     }
 
     public Piece[] Pieces => _pieces.ToArray();
@@ -32,27 +30,27 @@ public class Land : IEquatable<Land>
     public bool HasTower
         => _pieces.Any(p => p is Tower);
 
-    public Tower Tower
+    public Tower? Tower
         => _pieces.SingleOrDefault(p => p is Tower) as Tower;
 
     public bool HasWorker
         => _pieces.Any(p => p is Worker);
 
-    public Worker Worker
+    public Worker? Worker
         => _pieces.SingleOrDefault(p => p is Worker) as Worker;
 
     public int LandLevel
         => HasTower
-            ? Tower.Level
+            ? Tower!.Level
             : 0;
 
     public bool MaxLevelReached
-        => HasTower && Tower.IsComplete;
+        => HasTower && Tower!.IsComplete;
 
-    public bool Equals(Land other)
+    public bool Equals(Land? other)
     {
         if (other is null) return false;
-        return Coord.X == other.Coord.X && Coord.Y == other.Coord.Y;
+        return Coordinate.X == other.Coordinate.X && Coordinate.Y == other.Coordinate.Y;
     }
 
     public bool TryPutPiece(Piece piece)
@@ -60,13 +58,11 @@ public class Land : IEquatable<Land>
         if (piece is Tower && (HasTower || HasWorker))
             return false;
 
-        if (piece is Worker)
+        if (piece is Worker worker)
         {
             if (HasWorker) return false;
 
-            var worker = piece as Worker;
-
-            if (worker.CurrentLand != null && LandLevel > worker.LandLevel + 1)
+            if (worker.CurrentLand is not null && LandLevel > worker.LandLevel + 1)
                 return false;
         }
 
@@ -80,26 +76,26 @@ public class Land : IEquatable<Land>
     {
         if (!HasWorker) return false;
 
-        if (!Worker.Equals(worker)) return false;
+        if (!Worker!.Equals(worker)) return false;
 
         _pieces.Remove(Worker);
 
         return true;
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is null || obj.GetType() != GetType())
             return false;
 
-        return (obj as Land).Equals(this);
+        return (obj as Land)!.Equals(this);
     }
 
-    public static bool operator ==(Land land1, Land land2)
+    public static bool operator ==(Land? land1, Land? land2)
     {
         if (land1 is null && land2 is null) return true;
         if (land1 is null || land2 is null) return false;
-        return land1.Coord == land2.Coord;
+        return land1.Coordinate == land2.Coordinate;
     }
 
     public static bool operator !=(Land land1, Land land2)
@@ -109,6 +105,6 @@ public class Land : IEquatable<Land>
 
     public override int GetHashCode()
     {
-        return Coord.GetHashCode();
+        return Coordinate.GetHashCode();
     }
 }

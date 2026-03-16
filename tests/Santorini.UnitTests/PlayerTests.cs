@@ -1,19 +1,15 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Bogus;
 using FluentAssertions;
+using Santorini.Board;
 using Xunit;
 
-namespace Santorini.Tests;
+namespace Santorini.UnitTests;
 
 [ExcludeFromCodeCoverage]
 public class PlayerTests
 {
-    private readonly Faker _faker;
-
-    public PlayerTests()
-    {
-        _faker = new Faker();
-    }
+    private readonly Faker _faker = new();
 
     [Fact]
     public void Player_must_have_a_name()
@@ -22,7 +18,7 @@ public class PlayerTests
         var playerName = string.Empty;
 
         // act
-        Action act = () => new Player(playerName);
+        Action act = () => _ = new Player(playerName);
 
         // assert
         act.Should().Throw<ArgumentNullException>();

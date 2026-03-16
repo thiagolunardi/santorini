@@ -1,38 +1,28 @@
-﻿using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo("Santorini.Tests")]
+﻿using Santorini.Board;
+using Santorini.Commands;
+using Santorini.Pieces;
 
 namespace Santorini;
 
 public class Game
 {
-    private readonly List<MoveCommand> _movesHistory;
-
-    private readonly List<Player> _players;
-
-    public Game()
-    {
-        Island = new Island();
-        _players = new List<Player>();
-        _movesHistory = new List<MoveCommand>();
-        Winner = default;
-    }
-
-    public Island Island { get; }
-    public IReadOnlyCollection<Player> Players => _players;
-    public IReadOnlyCollection<MoveCommand> MovesHistory => _movesHistory;
-
-    public Player Winner { get; private set; }
-
-    public IEnumerable<Worker> Workers
+    private readonly List<MoveCommand> _movesHistory = [];
+    private readonly List<Player> _players = [];
+    private IEnumerable<Worker> Workers
     {
         get
         {
             foreach (var land in Island.Board)
                 if (land.HasWorker)
-                    yield return land.Worker;
+                    yield return land.Worker!;
         }
     }
+
+    public Island Island { get; } = new();
+    public IReadOnlyCollection<Player> Players => _players;
+    public IReadOnlyCollection<MoveCommand> MovesHistory => _movesHistory;
+    public Player? Winner { get; private set; }
+
 
     public bool GameIsOver
         => Winner != null;
@@ -40,15 +30,14 @@ public class Game
     public IEnumerable<MoveCommand> GetAvailableMoves(string playerName)
     {
         var player =
-            _players.SingleOrDefault(p => p.Name.Equals(playerName, StringComparison.InvariantCultureIgnoreCase));
+            _players.SingleOrDefault(p => p.Name.Equals(playerName));
         if (player == null) yield break;
 
         foreach (var worker in player.Workers)
         {
             if (worker.CurrentLand == null) continue;
 
-            var currentX = worker.CurrentLand.Coord.X;
-            var currentY = worker.CurrentLand.Coord.Y;
+            var currentCoordinate = worker.CurrentLand.Coordinate;
 
             // Try all 8 adjacent cells for move
             for (var dx = -1; dx <= 1; dx++)
@@ -56,25 +45,26 @@ public class Game
             {
                 if (dx == 0 && dy == 0) continue;
 
-                var moveX = currentX + dx;
-                var moveY = currentY + dy;
+                var moveToX = currentCoordinate.X + dx;
+                var moveToY = currentCoordinate.Y + dy;
+                if (!Island.IsValidCoordinate(moveToX, moveToY)) continue;
 
-                if (!Island.IsValidPosition(moveX, moveY)) continue;
+                var moveTo = new Coordinate(currentCoordinate.X + dx, currentCoordinate.Y + dy);
 
                 // Try all 8 adjacent cells for build (relative to post-move position)
-                for (var bdx = -1; bdx <= 1; bdx++)
-                for (var bdy = -1; bdy <= 1; bdy++)
+                for (var adjacentX = -1; adjacentX <= 1; adjacentX++)
+                for (var adjacentY = -1; adjacentY <= 1; adjacentY++)
                 {
-                    if (bdx == 0 && bdy == 0) continue;
+                    if (adjacentX == 0 && adjacentY == 0) continue;
 
-                    var buildX = moveX + bdx;
-                    var buildY = moveY + bdy;
-
-                    if (!Island.IsValidPosition(buildX, buildY)) continue;
+                    var buildAtX = currentCoordinate.X + adjacentX;
+                    var buildAtY = currentCoordinate.Y + adjacentY;
+                    if (!Island.IsValidCoordinate(buildAtX, buildAtY)) continue;
+                    
+                    var buildAt = new Coordinate(currentCoordinate.X + adjacentX, currentCoordinate.Y + adjacentY);
 
                     // Use canonical player name to ensure case-sensitive matching downstream
-                    var command = new MoveCommand(player.Name, worker.Number, new Coord(moveX, moveY),
-                        new Coord(buildX, buildY));
+                    var command = new MoveCommand(player.Name, worker.Number, moveTo, buildAt);
                     if (IsMoveCommandAllowed(command)) yield return command;
                 }
             }
@@ -86,7 +76,7 @@ public class Game
         if (_players.Count >= 2)
             return false;
 
-        if (_players.Any(p => p.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase)))
+        if (_players.Any(p => p.Name.Equals(name)))
             return false;
 
         _players.Add(new Player(name));
@@ -94,22 +84,21 @@ public class Game
         return true;
     }
 
-    public bool TryAddWorker(string playerName, int workerNumber, int posX, int posY)
+    public bool TryAddWorker(string playerName, int workerNumber, Coordinate coordinate)
     {
         if (Players.Count != 2) return false;
 
         var player =
-            Players.SingleOrDefault(p => p.Name.Equals(playerName, StringComparison.InvariantCultureIgnoreCase));
-        if (player is null) return false;
+            Players.SingleOrDefault(p => p.Name.Equals(playerName));
 
-        var worker = player.Workers.SingleOrDefault(b => b.Number == workerNumber);
+        var worker = player?.Workers.SingleOrDefault(b => b.Number == workerNumber);
         if (worker is null || worker.IsPlaced) return false;
 
         var opponentWorkersOnBoard =
-            Workers.Count(b => !b.Player.Name.Equals(playerName, StringComparison.InvariantCultureIgnoreCase));
+            Workers.Count(b => !b.Player.Name.Equals(playerName));
         if (opponentWorkersOnBoard == 1) return false;
 
-        return Island.TryAddPiece(worker, posX, posY);
+        return Island.TryAddPiece(worker, coordinate);
     }
 
     public bool TryMoveWorker(MoveCommand command)
@@ -120,7 +109,7 @@ public class Game
         var worker = Island.GetWorker(command.PlayerName, command.WorkerNumber);
         if (worker is null) return false;
 
-        var success = worker.TryMoveTo(command.MoveTo.X, command.MoveTo.Y);
+        var success = worker.TryMoveTo(command.MoveTo);
 
         if (success && worker.LandLevel == 3)
         {
@@ -130,7 +119,7 @@ public class Game
             return true;
         }
 
-        success = worker.TryBuildAt(command.BuildAt.X, command.BuildAt.Y);
+        success = worker.TryBuildAt(command.BuildAt);
 
         if (success)
             _movesHistory.Add(command);
@@ -153,13 +142,13 @@ public class Game
         var currentLand = worker.CurrentLand;
 
         // validate move destination is adjacent (within 1 step in each direction)
-        var moveDx = Math.Abs(currentLand.Coord.X - command.MoveTo.X);
-        var moveDy = Math.Abs(currentLand.Coord.Y - command.MoveTo.Y);
+        var moveDx = Math.Abs(currentLand.Coordinate.X - command.MoveTo.X);
+        var moveDy = Math.Abs(currentLand.Coordinate.Y - command.MoveTo.Y);
         if (moveDx > 1 || moveDy > 1) return false;
 
         // validate if worker can move to destination (unoccupied, not capped, climb at most 1 level)
-        if (!Island.TryGetLand(command.MoveTo.X, command.MoveTo.Y, out var moveToLand)) return false;
-        if (!moveToLand.IsUnoccupied) return false;
+        if (!Island.TryGetLand(command.MoveTo, out var moveToLand)) return false;
+        if (!moveToLand!.IsUnoccupied) return false;
         if (moveToLand.LandLevel - currentLand.LandLevel > 1) return false;
 
         // validate build destination is adjacent to the POST-MOVE position
@@ -168,7 +157,7 @@ public class Game
         if (buildDx > 1 || buildDy > 1) return false;
 
         // validate if worker can build after moving (unoccupied or the worker's original cell, not capped)
-        if (!Island.TryGetLand(command.BuildAt.X, command.BuildAt.Y, out var buildAtLand)) return false;
-        return buildAtLand.IsUnoccupied || buildAtLand == currentLand;
+        if (!Island.TryGetLand(command.BuildAt, out var buildAtLand)) return false;
+        return buildAtLand!.IsUnoccupied || buildAtLand == currentLand;
     }
 }

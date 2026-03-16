@@ -1,16 +1,18 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Bogus;
 using FluentAssertions;
+using Santorini.Board;
 using Xunit;
+// ReSharper disable InconsistentNaming
 
-namespace Santorini.Tests;
+namespace Santorini.UnitTests;
 
 [ExcludeFromCodeCoverage]
-public class CoordTests
+public class CoordinateTests
 {
     private readonly Faker _faker;
 
-    public CoordTests()
+    public CoordinateTests()
     {
         _faker = new Faker();
     }
@@ -23,7 +25,7 @@ public class CoordTests
         var posY = NewPos();
 
         // act
-        var coord = new Coord(posX, posY);
+        var coord = new Coordinate(posX, posY);
 
         // assert
         coord.IsValid.Should().BeTrue();
@@ -33,13 +35,13 @@ public class CoordTests
     public void Coord_can_be_compared()
     {
         // arrange
-        var coord1 = new Coord(0, 0);
-        var coord2 = new Coord(0, 1);
-        var coord3 = new Coord(1, 0);
-        var coord4 = new Coord(1, 1);
-        var coord5 = new Coord(1, 1);
-        var coord6 = default(Coord);
-        var coord7 = default(Coord);
+        var coord1 = new Coordinate(0, 0);
+        var coord2 = new Coordinate(0, 1);
+        var coord3 = new Coordinate(1, 0);
+        var coord4 = new Coordinate(1, 1);
+        var coord5 = new Coordinate(1, 1);
+        var coord6 = default(Coordinate);
+        var coord7 = default(Coordinate);
         var coord8 = default(object);
         var anything = DateTime.UtcNow;
 
@@ -53,11 +55,12 @@ public class CoordTests
         var eq45_0 = coord4.Equals((object)coord5);
         var eq45_1 = coord4.Equals(coord5);
         var eq45_2 = coord4 == coord5;
-        var eq56_1 = coord5.Equals((object)coord6);
+        var eq56_1 = coord5.Equals((object?)coord6);
         var eq56_2 = coord5 == coord6;
         var eq56_3 = coord6 == coord5;
         var eq67_1 = coord6 == coord7;
         var eq58_1 = coord5.Equals(coord8);
+        // ReSharper disable once SuspiciousTypeConversion.Global
         var eq58_2 = coord5.Equals(anything);
 
         // assert

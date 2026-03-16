@@ -1,3 +1,6 @@
+using Santorini.Board;
+using Santorini.Commands;
+
 namespace Santorini.Host.Services;
 
 public interface IGameService
@@ -11,7 +14,7 @@ public interface IGameService
 
 public class GameService : IGameService
 {
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private Game _game = null!;
 
     public GameService()
@@ -38,11 +41,11 @@ public class GameService : IGameService
         {
             var currentPlayer = GetCurrentPlayer();
             if (currentPlayer == null ||
-                !currentPlayer.Name.Equals(playerName, StringComparison.InvariantCultureIgnoreCase))
+                !currentPlayer.Name.Equals(playerName))
                 return false;
 
-            var command = new MoveCommand(currentPlayer.Name, workerNumber, new Coord(moveX, moveY),
-                new Coord(buildX, buildY));
+            var command = new MoveCommand(currentPlayer.Name, workerNumber, new Coordinate(moveX, moveY),
+                new Coordinate(buildX, buildY));
             return _game.TryMoveWorker(command);
         }
     }
@@ -67,9 +70,9 @@ public class GameService : IGameService
         _game.TryAddPlayer("Player2");
 
         // Initial worker placement
-        _game.TryAddWorker("Player1", 1, 0, 0);
-        _game.TryAddWorker("Player1", 2, 4, 4);
-        _game.TryAddWorker("Player2", 1, 0, 4);
-        _game.TryAddWorker("Player2", 2, 4, 0);
+        _game.TryAddWorker("Player1", 1, new(0, 0));
+        _game.TryAddWorker("Player1", 2, new(4, 4));
+        _game.TryAddWorker("Player2", 1, new(0, 4));
+        _game.TryAddWorker("Player2", 2, new(4, 0));
     }
 }

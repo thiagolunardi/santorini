@@ -1,23 +1,39 @@
-﻿namespace Santorini;
+﻿using Santorini.Board;
 
-public abstract class Piece
+namespace Santorini.Pieces;
+
+public abstract class Piece: IEquatable<Piece>
 {
-    protected Piece()
-    {
-        Id = Guid.NewGuid();
-        CurrentLand = null;
-    }
-
-    public Guid Id { get; }
-    public Land CurrentLand { get; private set; }
+    public Guid Id { get; } = Guid.NewGuid();
+    public Land? CurrentLand { get; private set; }
 
     public bool IsPlaced
-        => CurrentLand != null;
+        => CurrentLand is not null;
 
     internal void SetLand(Land land)
     {
-        if (land is null) throw new ArgumentNullException(nameof(land));
+        ArgumentNullException.ThrowIfNull(land);
 
         CurrentLand = land;
+    }
+
+    public bool Equals(Piece? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return Id.Equals(other.Id) && Equals(CurrentLand, other.CurrentLand);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((Piece)obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Id);
     }
 }

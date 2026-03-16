@@ -1,33 +1,31 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Bogus;
 using FluentAssertions;
+using Santorini.Board;
+using Santorini.Commands;
 using Xunit;
+// ReSharper disable InconsistentNaming
 
-namespace Santorini.Tests;
+namespace Santorini.UnitTests;
 
 [ExcludeFromCodeCoverage]
 public class MoveCommandTests
 {
-    public readonly Faker _faker;
-
-    public MoveCommandTests()
-    {
-        _faker = new Faker();
-    }
+    private readonly Faker _faker = new();
 
     [Fact]
     public void Create_valid_command()
     {
         // arrange
         var playerName = _faker.Name.FirstName();
-        var moveTo = new Coord
+        var moveTo = new Coordinate
         (
             _faker.Random.Number(0, 4),
             _faker.Random.Number(0, 4)
         );
-        var buildAt = default(Coord);
+        var buildAt = default(Coordinate);
         while (buildAt is null || buildAt.Equals(moveTo))
-            buildAt = new Coord
+            buildAt = new Coordinate
             (
                 _faker.Random.Number(0, 4),
                 _faker.Random.Number(0, 4)
@@ -45,8 +43,8 @@ public class MoveCommandTests
     {
         // arrange
         var playerName = string.Empty;
-        var moveTo = new Coord(0, 0);
-        var buildAt = new Coord(0, 1);
+        var moveTo = new Coordinate(0, 0);
+        var buildAt = new Coordinate(0, 1);
 
         // act
         var cmd = new MoveCommand(playerName, 1, moveTo, buildAt);
@@ -60,11 +58,11 @@ public class MoveCommandTests
     {
         // arrange
         var playerName = _faker.Name.FirstName();
-        var moveTo = default(Coord);
-        var buildAt = new Coord(0, 1);
+        var moveTo = default(Coordinate);
+        var buildAt = new Coordinate(0, 1);
 
         // act
-        Action act = () => new MoveCommand(playerName, 1, moveTo, buildAt);
+        Action act = () => _ = new MoveCommand(playerName, 1, moveTo!, buildAt);
 
         // assert
         act.Should()
@@ -73,30 +71,15 @@ public class MoveCommandTests
     }
 
     [Fact]
-    public void Command_with_wrong_moveto_coord_is_invalid()
-    {
-        // arrange
-        var playerName = _faker.Name.FirstName();
-        var moveTo = new Coord(0, 5);
-        var buildAt = new Coord(0, 1);
-
-        // act
-        var cmd = new MoveCommand(playerName, 1, moveTo, buildAt);
-
-        // assert
-        cmd.IsValid.Should().BeFalse();
-    }
-
-    [Fact]
     public void Command_without_buildat_coord_is_invalid()
     {
         // arrange
         var playerName = _faker.Name.FirstName();
-        var moveTo = new Coord(0, 0);
-        var buildAt = default(Coord);
+        var moveTo = new Coordinate(0, 0);
+        var buildAt = default(Coordinate);
 
         // act
-        Action act = () => new MoveCommand(playerName, 1, moveTo, buildAt);
+        Action act = () => _ = new MoveCommand(playerName, 1, moveTo, buildAt!);
 
         // assert
         act.Should()
@@ -105,27 +88,12 @@ public class MoveCommandTests
     }
 
     [Fact]
-    public void Command_with_wrong_buildat_coord_is_invalid()
-    {
-        // arrange
-        var playerName = _faker.Name.FirstName();
-        var moveTo = new Coord(0, 0);
-        var buildAt = new Coord(0, 5);
-
-        // act
-        var cmd = new MoveCommand(playerName, 1, moveTo, buildAt);
-
-        // assert
-        cmd.IsValid.Should().BeFalse();
-    }
-
-    [Fact]
     public void Command_with_same_moveto_and_buildat_is_invalid()
     {
         // arrange
         var playerName = _faker.Name.FirstName();
-        var moveTo = new Coord(0, 0);
-        var buildAt = new Coord(0, 0);
+        var moveTo = new Coordinate(0, 0);
+        var buildAt = new Coordinate(0, 0);
 
         // act
         var cmd = new MoveCommand(playerName, 1, moveTo, buildAt);
@@ -139,8 +107,8 @@ public class MoveCommandTests
     {
         // arrange
         var playerName = _faker.Name.FirstName();
-        var moveTo = new Coord(0, 0);
-        var buildAt = new Coord(0, 0);
+        var moveTo = new Coordinate(0, 0);
+        var buildAt = new Coordinate(0, 0);
 
         // act
         var cmd1 = new MoveCommand(playerName, 0, moveTo, buildAt);
@@ -155,11 +123,11 @@ public class MoveCommandTests
     public void Coord_can_comparer_themselves()
     {
         // arrange
-        var coord1 = new Coord(0, 0);
-        var coord2 = new Coord(0, 0);
-        var coord3 = new Coord(0, 1);
-        var coord4 = new Coord(1, 0);
-        var coord5 = default(Coord);
+        var coord1 = new Coordinate(0, 0);
+        var coord2 = new Coordinate(0, 0);
+        var coord3 = new Coordinate(0, 1);
+        var coord4 = new Coordinate(1, 0);
+        var coord5 = default(Coordinate);
 
         // act
         var c1e2 = coord1.Equals(coord2);

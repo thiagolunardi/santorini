@@ -1,31 +1,13 @@
 using System.Net;
 using System.Net.Http.Json;
-using Aspire.Hosting;
-using Aspire.Hosting.Testing;
 using FluentAssertions;
-using Projects;
 using Xunit;
 
 namespace Santorini.IntegrationTests;
 
-public class GameEndpointsTests : IAsyncLifetime
+public class GameEndpointsTests(GameEndpointsFixture fixture) : IClassFixture<GameEndpointsFixture>
 {
-    private DistributedApplication _app = null!;
-    private HttpClient _client = null!;
-
-    public async Task InitializeAsync()
-    {
-        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Santorini_AppHost>();
-        _app = await appHost.BuildAsync();
-        await _app.StartAsync();
-        _client = _app.CreateHttpClient("api");
-    }
-
-    public async Task DisposeAsync()
-    {
-        _client.Dispose();
-        await _app.DisposeAsync();
-    }
+    private readonly HttpClient _client = fixture.Client;
 
     [Fact]
     public async Task GetState_ReturnsOk()

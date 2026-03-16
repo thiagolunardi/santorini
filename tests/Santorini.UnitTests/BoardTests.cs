@@ -1,19 +1,16 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Bogus;
 using FluentAssertions;
+using Santorini.Board;
+using Santorini.Pieces;
 using Xunit;
 
-namespace Santorini.Tests;
+namespace Santorini.UnitTests;
 
 [ExcludeFromCodeCoverage]
 public class BoardTests
 {
-    public readonly Faker _faker;
-
-    public BoardTests()
-    {
-        _faker = new Faker();
-    }
+    private readonly Faker _faker = new();
 
     [Fact]
     public void Board_must_start_with_25_empty_lands()
@@ -26,12 +23,12 @@ public class BoardTests
         {
             land.Should().NotBeNull();
             land.IsUnoccupied.Should().BeTrue();
-            board.IsUnoccupied(land.Coord.X, land.Coord.Y).Should().BeTrue();
+            board.IsUnoccupied(land.Coordinate.X, land.Coordinate.Y).Should().BeTrue();
         }
 
         for (var x = 0; x < 5; x++)
         for (var y = 0; y < 5; y++)
-            board.Board[x, y].Equals(new Land(board, x, y));
+            board.Board[x, y].Should().Be(new Land(board, new (x, y)));
     }
 
     [Fact]
@@ -44,10 +41,10 @@ public class BoardTests
 
         // act
         var success = true;
-        success = success && board.TryAddPiece(player1.Workers.First(), 0, 0);
-        success = success && board.TryAddPiece(player1.Workers.Last(), 0, 1);
-        success = success && board.TryAddPiece(player2.Workers.First(), 0, 2);
-        success = success && board.TryAddPiece(player2.Workers.Last(), 0, 3);
+        success = success && board.TryAddPiece(player1.Workers.First(), new(0, 0));
+        success = success && board.TryAddPiece(player1.Workers.Last(), new(0, 1));
+        success = success && board.TryAddPiece(player2.Workers.First(), new(0, 2));
+        success = success && board.TryAddPiece(player2.Workers.Last(), new(0, 3));
 
         // assert
         success.Should().BeTrue();
@@ -68,7 +65,7 @@ public class BoardTests
 
         var posX = _faker.Random.Number(0, 4);
         var posY = _faker.Random.Number(0, 4);
-        board.TryAddPiece(worker1, posX, posY);
+        board.TryAddPiece(worker1, new(posX, posY));
 
         // act
         var workerFound = board.GetWorker(playerName, 1);
@@ -81,21 +78,6 @@ public class BoardTests
         workerNotFound.Should().BeNull();
     }
 
-
-    [Fact]
-    public void Board_can_refuse_put_piece_invalid_coordinate()
-    {
-        // arrange
-        var board = new Island();
-        var building = new Tower();
-
-        // act
-        var success = board.TryAddPiece(building, 0, 5);
-
-        // assert
-        success.Should().BeFalse();
-    }
-
     [Fact]
     public void Board_can_find_land_from_valid_coordinate()
     {
@@ -105,28 +87,12 @@ public class BoardTests
         var posY = _faker.Random.Number(0, 4);
 
         // act
-        var success = board.TryGetLand(posX, posY, out var land);
+        var success = board.TryGetLand(new(posX, posY), out var land);
 
         // assert
         success.Should().BeTrue();
         land.Should().NotBeNull();
-        land.Coord.X.Should().Be(posX);
-        land.Coord.Y.Should().Be(posY);
-    }
-
-    [Fact]
-    public void Board_cannot_find_land_from_invalid_coordinate()
-    {
-        // arrange
-        var board = new Island();
-        var posX = _faker.Random.Number(int.MinValue, -1);
-        var posY = _faker.Random.Number(5, int.MaxValue);
-
-        // act
-        var success = board.TryGetLand(posX, posY, out var land);
-
-        // assert
-        success.Should().BeFalse();
-        land.Should().BeNull();
+        land.Coordinate.X.Should().Be(posX);
+        land.Coordinate.Y.Should().Be(posY);
     }
 }

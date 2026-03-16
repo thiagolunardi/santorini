@@ -1,19 +1,16 @@
 using System.Diagnostics.CodeAnalysis;
 using Bogus;
 using FluentAssertions;
+using Santorini.Board;
+using Santorini.Pieces;
 using Xunit;
 
-namespace Santorini.Tests;
+namespace Santorini.UnitTests;
 
 [ExcludeFromCodeCoverage]
 public class WorkerTests
 {
-    private readonly Faker _faker;
-
-    public WorkerTests()
-    {
-        _faker = new Faker();
-    }
+    private readonly Faker _faker = new();
 
     [Fact]
     public void Worker_must_have_number_greater_than_zero()
@@ -22,7 +19,7 @@ public class WorkerTests
         var player = new Player(_faker.Name.FirstName());
 
         // act
-        Action act = () => new Worker(player, 0);
+        Action act = () => _ = new Worker(player, 0);
 
         // assert
         act.Should().Throw<ArgumentOutOfRangeException>();
@@ -35,7 +32,7 @@ public class WorkerTests
         var player = default(Player);
 
         // act
-        Action act = () => new Worker(player, 0);
+        Action act = () => _ = new Worker(player!, 0);
 
         // assert
         act.Should().Throw<ArgumentNullException>();
@@ -104,10 +101,10 @@ public class WorkerTests
         var board = new Island();
         var player = new Player(_faker.Name.FirstName());
         var worker = player.Workers.First();
-        board.TryAddPiece(worker, 0, 0);
+        board.TryAddPiece(worker, new(0, 0));
 
         // act
-        var success = worker.TryMoveTo(0, 1);
+        var success = worker.TryMoveTo(new(0, 1));
 
         // arrange
         success.Should().BeTrue();
@@ -124,34 +121,16 @@ public class WorkerTests
         var worker1 = player.Workers.First();
         var worker2 = player.Workers.Last();
 
-        board.TryAddPiece(worker1, 0, 0);
+        board.TryAddPiece(worker1, new(0, 0));
 
         // act
-        var success1 = worker1.TryMoveTo(0, 1);
-        var success2 = worker2.TryMoveTo(1, 0);
+        var success1 = worker1.TryMoveTo(new(0, 1));
+        var success2 = worker2.TryMoveTo(new(1, 0));
 
         // assert
         success1.Should().BeTrue();
         success2.Should().BeFalse();
     }
-
-    [Fact]
-    public void Refuse_move_worker_to_invalid_coordinate()
-    {
-        // arrange
-        var board = new Island();
-        var player = new Player(_faker.Name.FirstName());
-        var worker = player.Workers.First();
-
-        board.TryAddPiece(worker, 0, 0);
-
-        // act
-        var success = worker.TryMoveTo(-1, 5);
-
-        // assert
-        success.Should().BeFalse();
-    }
-
 
     [Fact]
     public void Refuse_move_worker_2_lands_away()
@@ -161,11 +140,11 @@ public class WorkerTests
         var player = new Player(_faker.Name.FirstName());
         var worker = player.Workers.First();
 
-        board.TryAddPiece(worker, 0, 0);
+        board.TryAddPiece(worker, new(0, 0));
 
         // act
-        var success1 = worker.TryMoveTo(0, 2);
-        var success2 = worker.TryMoveTo(2, 0);
+        var success1 = worker.TryMoveTo(new(0, 2));
+        var success2 = worker.TryMoveTo(new(2, 0));
 
         // assert
         success1.Should().BeFalse();
@@ -180,11 +159,11 @@ public class WorkerTests
         var player = new Player(_faker.Name.FirstName());
         var worker = player.Workers.First();
 
-        board.TryAddPiece(worker, 0, 0);
+        board.TryAddPiece(worker, new(0, 0));
 
         // act
-        var success1 = worker.TryMoveTo(0, 2);
-        var success2 = worker.TryMoveTo(2, 0);
+        var success1 = worker.TryMoveTo(new(0, 2));
+        var success2 = worker.TryMoveTo(new(2, 0));
 
         // assert
         success1.Should().BeFalse();
@@ -200,20 +179,20 @@ public class WorkerTests
         var worker1 = player.Workers.First();
         var worker2 = player.Workers.Last();
 
-        board.TryAddPiece(worker1, 0, 0);
-        board.TryAddPiece(worker2, 4, 4);
+        board.TryAddPiece(worker1, new(0, 0));
+        board.TryAddPiece(worker2, new(4, 4));
 
         var building1 = new Tower();
 
         var building2 = new Tower();
         building2.RaiseLevel();
 
-        board.TryAddPiece(building1, 0, 1);
-        board.TryAddPiece(building2, 4, 3);
+        board.TryAddPiece(building1, new(0, 1));
+        board.TryAddPiece(building2, new(4, 3));
 
         // act
-        var success1 = worker1.TryMoveTo(0, 1);
-        var success2 = worker1.TryMoveTo(4, 3);
+        var success1 = worker1.TryMoveTo(new(0, 1));
+        var success2 = worker1.TryMoveTo(new(4, 3));
 
         // assert
         success1.Should().BeTrue();
@@ -227,10 +206,10 @@ public class WorkerTests
         var board = new Island();
         var player = new Player(_faker.Name.FirstName());
         var worker = player.Workers.First();
-        board.TryAddPiece(worker, 0, 0);
+        board.TryAddPiece(worker, new(0, 0));
 
         // act
-        var success = worker.TryBuildAt(0, 1);
+        var success = worker.TryBuildAt(new(0, 1));
 
         // arrange
         success.Should().BeTrue();
@@ -250,12 +229,12 @@ public class WorkerTests
         var worker1 = player.Workers.First();
         var worker2 = player.Workers.First();
 
-        board.TryAddPiece(worker1, 0, 0);
-        board.TryAddPiece(worker2, 4, 4);
+        board.TryAddPiece(worker1, new(0, 0));
+        board.TryAddPiece(worker2, new(4, 4));
 
         // act
-        var success1 = worker1.TryBuildAt(0, 2);
-        var success2 = worker2.TryBuildAt(2, 4);
+        var success1 = worker1.TryBuildAt(new(0, 2));
+        var success2 = worker2.TryBuildAt(new(2, 4));
 
         // assert
         success1.Should().BeFalse();
@@ -271,11 +250,11 @@ public class WorkerTests
         var worker1 = player.Workers.First();
         var worker2 = player.Workers.Last();
 
-        board.TryAddPiece(worker1, 0, 0);
-        board.TryAddPiece(worker2, 0, 1);
+        board.TryAddPiece(worker1, new(0, 0));
+        board.TryAddPiece(worker2, new(0, 1));
 
         // act
-        var success = worker1.TryBuildAt(0, 1);
+        var success = worker1.TryBuildAt(new(0, 1));
 
         // assert
         success.Should().BeFalse();
@@ -289,10 +268,10 @@ public class WorkerTests
         var player = new Player(_faker.Name.FirstName());
         var worker = player.Workers.First();
 
-        board.TryAddPiece(worker, 0, 0);
+        board.TryAddPiece(worker, new(0, 0));
 
         // act
-        var success = worker.TryBuildAt(0, 0);
+        var success = worker.TryBuildAt(new(0, 0));
 
         // assert
         success.Should().BeFalse();
@@ -308,11 +287,11 @@ public class WorkerTests
         var building = new Tower();
         while (!building.IsComplete) building.RaiseLevel();
 
-        board.TryAddPiece(worker, 0, 0);
-        board.TryAddPiece(building, 0, 1);
+        board.TryAddPiece(worker, new(0, 0));
+        board.TryAddPiece(building, new(0, 1));
 
         // act
-        var success = worker.TryBuildAt(0, 1);
+        var success = worker.TryBuildAt(new(0, 1));
 
         // assert
         success.Should().BeFalse();
@@ -328,12 +307,12 @@ public class WorkerTests
         var building = new Tower();
         building.RaiseLevel();
 
-        board.TryAddPiece(worker, 0, 0);
-        board.TryAddPiece(building, 0, 1);
+        board.TryAddPiece(worker, new(0, 0));
+        board.TryAddPiece(building, new(0, 1));
 
         // act
         var buildingLevelBeforeBuild = building.Level;
-        var success = worker.TryBuildAt(0, 1);
+        var success = worker.TryBuildAt(new(0, 1));
 
         // assert
         success.Should().BeTrue();
@@ -352,33 +331,16 @@ public class WorkerTests
         var building = new Tower();
         while (!building.IsComplete) building.RaiseLevel();
 
-        board.TryAddPiece(worker, 0, 0);
-        board.TryAddPiece(building, 0, 1);
+        board.TryAddPiece(worker, new(0, 0));
+        board.TryAddPiece(building, new(0, 1));
 
         // act
         var buildingLevelBeforeBuild = building.Level;
-        var success = worker.TryBuildAt(0, 1);
+        var success = worker.TryBuildAt(new(0, 1));
 
         // assert
         success.Should().BeFalse();
         buildingLevelBeforeBuild.Should().Be(4);
         building.Level.Should().Be(4);
-    }
-
-    [Fact]
-    public void Worker_cannot_build_at_invalid_coordinate()
-    {
-        // arrange
-        var board = new Island();
-        var player = new Player(_faker.Name.FirstName());
-        var worker = player.Workers.First();
-
-        board.TryAddPiece(worker, 0, 0);
-
-        // act
-        var success = worker.TryBuildAt(5, -1);
-
-        // assert
-        success.Should().BeFalse();
     }
 }

@@ -1,21 +1,18 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Bogus;
 using FluentAssertions;
+using Santorini.Board;
+using Santorini.Pieces;
 using Xunit;
+// ReSharper disable InconsistentNaming
 
-namespace Santorini.Tests;
+namespace Santorini.UnitTests;
 
 [ExcludeFromCodeCoverage]
 public class LandTests
 {
-    private readonly Island _board;
-    private readonly Faker _faker;
-
-    public LandTests()
-    {
-        _faker = new Faker();
-        _board = new Island();
-    }
+    private readonly Island _board = new();
+    private readonly Faker _faker = new();
 
     [Fact]
     public void Land_created_with_valid_positions()
@@ -25,12 +22,12 @@ public class LandTests
         var posY = NewPos();
 
         // act
-        var land = new Land(_board, posX, posY);
+        var land = new Land(_board, new(posX, posY));
 
         // assert
         land.Should().NotBeNull();
-        land.Coord.X.Should().Be(posX);
-        land.Coord.Y.Should().Be(posY);
+        land.Coordinate.X.Should().Be(posX);
+        land.Coordinate.Y.Should().Be(posY);
         land.Pieces.Should().HaveCount(0);
         land.HasWorker.Should().BeFalse();
         land.HasTower.Should().BeFalse();
@@ -46,8 +43,8 @@ public class LandTests
         var posX = NewPos();
         var posY = NewPos();
 
-        var land1 = new Land(_board, posX, posY);
-        var land2 = new Land(_board, posX, posY);
+        var land1 = new Land(_board, new(posX, posY));
+        var land2 = new Land(_board, new(posX, posY));
 
         // act
         var equals = land1.Equals(land2);
@@ -63,7 +60,7 @@ public class LandTests
         var posX = NewPos();
         var posY = NewPos();
 
-        var land = new Land(_board, posX, posY);
+        var land = new Land(_board, new(posX, posY));
 
         var building = new Tower();
 
@@ -76,6 +73,7 @@ public class LandTests
         hasBuildingBeforeAct.Should().BeFalse();
         land.HasWorker.Should().BeFalse();
         land.HasTower.Should().BeTrue();
+        land.Tower.Should().NotBeNull();
         land.Tower.Equals(building).Should().BeTrue();
         land.MaxLevelReached.Should().BeFalse();
     }
@@ -87,7 +85,7 @@ public class LandTests
         var posX = NewPos();
         var posY = NewPos();
 
-        var land = new Land(_board, posX, posY);
+        var land = new Land(_board, new(posX, posY));
 
         var previousBuilding = new Tower();
         land.TryPutPiece(previousBuilding);
@@ -104,6 +102,7 @@ public class LandTests
         land.HasWorker.Should().BeFalse();
         land.HasTower.Should().BeTrue();
         land.Pieces.Should().HaveCount(1);
+        land.Tower.Should().NotBeNull();
         land.Tower.Equals(previousBuilding).Should().BeTrue();
     }
 
@@ -114,7 +113,7 @@ public class LandTests
         var posX = NewPos();
         var posY = NewPos();
 
-        var land = new Land(_board, posX, posY);
+        var land = new Land(_board, new(posX, posY));
 
         var player = new Player(_faker.Name.FirstName());
         var worker = player.Workers.First();
@@ -125,6 +124,7 @@ public class LandTests
         // assert
         success.Should().BeTrue();
         land.HasWorker.Should().BeTrue();
+        land.Worker.Should().NotBeNull();
         land.Worker.Equals(worker).Should().BeTrue();
         land.IsUnoccupied.Should().BeFalse();
     }
@@ -136,7 +136,7 @@ public class LandTests
         var posX = NewPos();
         var posY = NewPos();
 
-        var originLand = new Land(_board, posX, posY);
+        var originLand = new Land(_board, new(posX, posY));
         var player = new Player(_faker.Name.FirstName());
         var worker = player.Workers.First();
         originLand.TryPutPiece(worker);
@@ -144,7 +144,7 @@ public class LandTests
         posX = NewPos();
         posY = NewPos();
 
-        var destinationland = new Land(_board, posX, posY);
+        var destinationland = new Land(_board, new(posX, posY));
         destinationland.TryPutPiece(new Tower());
 
         // act
@@ -157,6 +157,7 @@ public class LandTests
         hasBuildingBeforeMove.Should().BeTrue();
         landLevelBeforeMove.Should().Be(1);
         destinationland.HasWorker.Should().BeTrue();
+        destinationland.Worker.Should().NotBeNull();
         destinationland.Worker.Equals(worker).Should().BeTrue();
     }
 
@@ -167,7 +168,7 @@ public class LandTests
         var posX = NewPos();
         var posY = NewPos();
 
-        var originLand = new Land(_board, posX, posY);
+        var originLand = new Land(_board, new(posX, posY));
         var player = new Player(_faker.Name.FirstName());
         var worker = player.Workers.First();
         originLand.TryPutPiece(worker);
@@ -175,7 +176,7 @@ public class LandTests
         posX = NewPos();
         posY = NewPos();
 
-        var destinationland = new Land(_board, posX, posY);
+        var destinationland = new Land(_board, new(posX, posY));
         var tower = new Tower();
         tower.RaiseLevel();
         destinationland.TryPutPiece(tower);
@@ -200,7 +201,7 @@ public class LandTests
         var posX = NewPos();
         var posY = NewPos();
 
-        var land = new Land(_board, posX, posY);
+        var land = new Land(_board, new(posX, posY));
 
         var player = new Player(_faker.Name.FirstName());
         var worker1 = player.Workers.First();
@@ -214,6 +215,7 @@ public class LandTests
         // assert
         success.Should().BeFalse();
         land.HasWorker.Should().BeTrue();
+        land.Worker.Should().NotBeNull();
         land.Worker.Equals(worker1).Should().BeTrue();
         land.Worker.Equals(worker2).Should().BeFalse();
     }
@@ -225,7 +227,7 @@ public class LandTests
         var posX = NewPos();
         var posY = NewPos();
 
-        var land = new Land(_board, posX, posY);
+        var land = new Land(_board, new(posX, posY));
 
         var player = new Player(_faker.Name.FirstName());
         var worker = player.Workers.First();
@@ -249,7 +251,7 @@ public class LandTests
         var posX = NewPos();
         var posY = NewPos();
 
-        var land = new Land(_board, posX, posY);
+        var land = new Land(_board, new(posX, posY));
 
         var player = new Player(_faker.Name.FirstName());
         var worker = player.Workers.First();
@@ -275,7 +277,7 @@ public class LandTests
         var worker1 = player.Workers.First();
         var worker2 = player.Workers.Last();
 
-        var land = new Land(_board, posX, posY);
+        var land = new Land(_board, new(posX, posY));
         land.TryPutPiece(worker1);
 
         // act
@@ -286,6 +288,7 @@ public class LandTests
         success.Should().BeFalse();
         hasWorkerBeforeRemove.Should().BeTrue();
         land.HasWorker.Should().BeTrue();
+        land.Worker.Should().NotBeNull();
         land.Worker.Equals(worker1).Should().BeTrue();
     }
 
@@ -297,7 +300,7 @@ public class LandTests
         var posY = _faker.Random.Number(5, int.MaxValue);
 
         // act
-        Action act = () => new Land(_board, posX, posY);
+        Action act = () => _ = new Land(_board, new(posX, posY));
 
         // assert
         act.Should().Throw<ArgumentOutOfRangeException>();
@@ -307,12 +310,12 @@ public class LandTests
     public void Land_throw_exception_with_null_board()
     {
         // arrange
-        var board = default(Island);
+        var island = default(Island);
         var posX = NewPos();
         var posY = NewPos();
 
         // act
-        Action act = () => new Land(board, posX, posY);
+        Action act = () => _ = new Land(island!, new(posX, posY));
 
         // assert
         act.Should().Throw<ArgumentNullException>();
@@ -325,10 +328,10 @@ public class LandTests
         var posX = _faker.Random.Number(1, 4);
         var posY = _faker.Random.Number(1, 4);
 
-        var landA = new Land(_board, posX, posY);
-        var landB = new Land(_board, posX, posY);
-        var landC = new Land(_board, posX, 0);
-        var landD = new Land(_board, 0, posY);
+        var landA = new Land(_board, new(posX, posY));
+        var landB = new Land(_board, new(posX, posY));
+        var landC = new Land(_board, new(posX, 0));
+        var landD = new Land(_board, new(0, posY));
         var landE = default(Land);
 
         // act
@@ -344,10 +347,12 @@ public class LandTests
         var equalsA0_1 = landA == landE;
         var equalsA0_2 = landE == landA;
         var equals00_1 = landE == null;
+        // ReSharper disable once SuspiciousTypeConversion.Global
         var equals00_2 = landD.Equals(DateTime.UtcNow);
+        // ReSharper disable once SuspiciousTypeConversion.Global
         var equals00_3 = landA.Equals(DateTime.UtcNow);
         var equals00_4 = landA.Equals((object)landB);
-        var equals00_5 = landA.Equals((object)null);
+        var equals00_5 = landA.Equals((object?)null);
 
         // assert
         equalsAB_1.Should().BeTrue();

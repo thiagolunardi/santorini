@@ -1,24 +1,25 @@
-﻿namespace Santorini;
+﻿using Santorini.Board;
+
+namespace Santorini.Pieces;
 
 public class Worker : Piece, IEquatable<Worker>
 {
     internal Worker(Player player, int number)
     {
-        if (player is null) throw new ArgumentNullException(nameof(player));
-        if (number <= 0)
-            throw new ArgumentOutOfRangeException(nameof(number), "Worker number must be equal or greater than 1");
+        ArgumentNullException.ThrowIfNull(player);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(number, 0);
 
         Player = player;
         Number = number;
     }
 
     public Player Player { get; }
-    public int Number { get; set; }
+    public int Number { get; }
 
     public int LandLevel
         => CurrentLand?.LandLevel ?? -1;
 
-    public bool Equals(Worker other)
+    public bool Equals(Worker? other)
     {
         if (other is null) return false;
 
@@ -26,22 +27,19 @@ public class Worker : Piece, IEquatable<Worker>
                && Number == other.Number;
     }
 
-    public bool TryMoveTo(int posX, int posY)
+    public bool TryMoveTo(Coordinate coordinate)
     {
-        if (CanMoveTo(posX, posY, out var land))
-        {
-            CurrentLand.TryRemoveWorker(this);
-            return land.TryPutPiece(this);
-        }
-
-        return false;
+        if (!CanMoveTo(coordinate, out var land)) return false;
+        
+        CurrentLand?.TryRemoveWorker(this);
+        return land!.TryPutPiece(this);
     }
 
-    public bool TryBuildAt(int posX, int posY)
+    public bool TryBuildAt(Coordinate coordinate)
     {
-        if (CanBuildAt(posX, posY, out var land))
+        if (CanBuildAt(coordinate, out var land))
         {
-            if (land.HasTower && !land.Tower.IsComplete)
+            if (land!.HasTower && !land.Tower!.IsComplete)
             {
                 land.Tower.RaiseLevel();
 
@@ -55,18 +53,18 @@ public class Worker : Piece, IEquatable<Worker>
         return false;
     }
 
-    private bool CanMoveTo(int posX, int posY, out Land land)
+    private bool CanMoveTo(Coordinate coordinate, out Land? land)
     {
-        land = default;
+        land = null;
 
         if (CurrentLand is null) return false;
 
-        if (CurrentLand.Island.TryGetLand(posX, posY, out land))
+        if (CurrentLand.Island.TryGetLand(coordinate, out land))
         {
-            var from = CurrentLand;
-            var to = land;
+            var from = CurrentLand!;
+            var to = land!;
 
-            if (IsLandBlocked(land)) return false;
+            if (IsLandBlocked(land!)) return false;
 
             if (IsMovingMoreThan2StepsAway(from, to))
                 return false;
@@ -93,8 +91,8 @@ public class Worker : Piece, IEquatable<Worker>
 
     private bool IsMovingMoreThan2StepsAway(Land from, Land to)
     {
-        var posXdiff = Math.Abs(from.Coord.X - to.Coord.X);
-        var posYdiff = Math.Abs(from.Coord.Y - to.Coord.Y);
+        var posXdiff = Math.Abs(from.Coordinate.X - to.Coordinate.X);
+        var posYdiff = Math.Abs(from.Coordinate.Y - to.Coordinate.Y);
 
         if (posXdiff > 1 || posYdiff > 1) return true;
         return false;
@@ -102,19 +100,23 @@ public class Worker : Piece, IEquatable<Worker>
 
     private bool IsLandBlocked(Land land)
     {
-        return CurrentLand.Equals(land)
+        return land.Equals(CurrentLand)
                || land.HasWorker
                || land.MaxLevelReached;
     }
 
-    private bool CanBuildAt(int posX, int posY, out Land land)
+    private bool CanBuildAt(Coordinate coordinate, out Land? land)
     {
-        if (CurrentLand.Island.TryGetLand(posX, posY, out land))
+        land = null;
+        if (CurrentLand is null) return false;
+        
+        if (CurrentLand.Island.TryGetLand(coordinate, out land))
         {
-            if (IsLandBlocked(land)) return false;
+            if (IsLandBlocked(land!)) return false;
 
-            var (posXDiff, posYDiff) = (Math.Abs(CurrentLand.Coord.X - land.Coord.X),
-                Math.Abs(CurrentLand.Coord.Y - land.Coord.Y));
+            var (posXDiff, posYDiff) = (Math.Abs(CurrentLand.Coordinate.X - land!.Coordinate.X),
+                Math.Abs(CurrentLand.Coordinate.Y - land.Coordinate.Y));
+            
             if (posXDiff > 1 || posYDiff > 1) return false;
 
             return true;

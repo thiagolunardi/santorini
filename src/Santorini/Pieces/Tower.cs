@@ -1,4 +1,4 @@
-﻿namespace Santorini;
+﻿namespace Santorini.Pieces;
 
 public class Tower : Piece
 {

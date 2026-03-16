@@ -1,11 +1,13 @@
-﻿namespace Santorini;
+﻿using Santorini.Board;
+
+namespace Santorini.Commands;
 
 public class MoveCommand
 {
-    public MoveCommand(string playerName, int workerNumber, Coord moveTo, Coord buildAt)
+    public MoveCommand(string playerName, int workerNumber, Coordinate moveTo, Coordinate buildAt)
     {
-        if (moveTo is null) throw new ArgumentNullException(nameof(moveTo));
-        if (buildAt is null) throw new ArgumentNullException(nameof(buildAt));
+        ArgumentNullException.ThrowIfNull(moveTo);
+        ArgumentNullException.ThrowIfNull(buildAt);
 
         PlayerName = playerName;
         WorkerNumber = workerNumber;
@@ -13,8 +15,8 @@ public class MoveCommand
         BuildAt = buildAt;
     }
 
-    public Coord MoveTo { get; }
-    public Coord BuildAt { get; }
+    public Coordinate MoveTo { get; }
+    public Coordinate BuildAt { get; }
 
     public string PlayerName { get; }
     public int WorkerNumber { get; }
@@ -26,7 +28,7 @@ public class MoveCommand
             if (string.IsNullOrEmpty(PlayerName))
                 return false;
 
-            if (WorkerNumber < 1 || WorkerNumber > 2)
+            if (WorkerNumber is < 1 or > 2)
                 return false;
 
             if (MoveTo.Equals(BuildAt))

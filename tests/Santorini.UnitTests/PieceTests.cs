@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Bogus;
 using FluentAssertions;
+using Santorini.Board;
+using Santorini.Pieces;
 using Xunit;
 
-namespace Santorini.Tests;
+namespace Santorini.UnitTests;
 
 [ExcludeFromCodeCoverage]
 public class PieceTests
@@ -37,7 +39,7 @@ public class PieceTests
         var land = default(Land);
 
         // act
-        var act = () => piece.SetLand(land);
+        var act = () => piece.SetLand(land!);
 
         // assert
         act.Should().Throw<ArgumentNullException>();

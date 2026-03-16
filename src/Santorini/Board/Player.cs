@@ -1,4 +1,6 @@
-﻿namespace Santorini;
+﻿using Santorini.Pieces;
+
+namespace Santorini.Board;
 
 public class Player
 {
@@ -7,11 +9,11 @@ public class Player
         if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
         Name = name;
-        Workers = new[]
-        {
+        Workers =
+        [
             new Worker(this, 1),
             new Worker(this, 2)
-        };
+        ];
     }
 
     public string Name { get; }

@@ -3,13 +3,16 @@
 
 # Santorini
 
-A digital implementation of the **Santorini** board game — built as a platform for experimenting with multi-AI agent architectures.
+A digital implementation of the **Santorini** board game — built as a platform for experimenting with multi-AI agent
+architectures.
 
 ---
 
 ## About the Game
 
-Santorini is a strategic 2-player (or more, with god powers) board game set on the sun-drenched island of Santorini, Greece. Players take turns moving their workers across a 5×5 grid and constructing building levels on adjacent spaces. The first player to move one of their workers up to the **third level** of a tower wins.
+Santorini is a strategic 2-player (or more, with god powers) board game set on the sun-drenched island of Santorini,
+Greece. Players take turns moving their workers across a 5×5 grid and constructing building levels on adjacent spaces.
+The first player to move one of their workers up to the **third level** of a tower wins.
 
 Simple rules, deep strategy.
 
@@ -19,9 +22,11 @@ Simple rules, deep strategy.
 
 ## About This Project
 
-This project is a learning playground for building a **multi-AI agent architecture**. The goal is to have autonomous AI agents play Santorini against each other, making decisions through a structured game API.
+This project is a learning playground for building a **multi-AI agent architecture**. The goal is to have autonomous AI
+agents play Santorini against each other, making decisions through a structured game API.
 
-The game engine exposes itself as an **MCP (Model Context Protocol) server**, allowing AI agents to connect, perceive the game state, and issue moves using standard tooling. The architecture is built with:
+The game engine exposes itself as an **MCP (Model Context Protocol) server**, allowing AI agents to connect, perceive
+the game state, and issue moves using standard tooling. The architecture is built with:
 
 - **.NET 10** — game engine and API
 - **.NET Aspire** — orchestration of services (API + UI)

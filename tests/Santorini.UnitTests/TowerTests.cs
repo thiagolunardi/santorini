@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
+using Santorini.Pieces;
 using Xunit;
 
-namespace Santorini.Tests;
+namespace Santorini.UnitTests;
 
 [ExcludeFromCodeCoverage]
 public class TowerTests

@@ -5,7 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="Santorini.UnitTests" />
+        <InternalsVisibleTo Include="Santorini.UnitTests"/>
     </ItemGroup>
 
 </Project>

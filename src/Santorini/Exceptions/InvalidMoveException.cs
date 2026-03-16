@@ -1,4 +1,4 @@
-﻿namespace Santorini;
+﻿namespace Santorini.Exceptions;
 
 public class InvalidMoveException : Exception
 {
