@@ -1,0 +1,18 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="readme.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Santorini.Host/Santorini.Host.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="src/Santorini.Tests/Santorini.Tests.csproj" />
+  </Folder>
+  <Project Path="src/Santorini/Santorini.csproj" />
+</Solution>
