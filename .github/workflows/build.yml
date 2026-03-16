@@ -214,6 +214,7 @@ jobs:
         with:
           comment-summary-in-pr: always
           base-ref: refs/heads/main
+          head-ref: refs/heads/main
 
   code-security-check:
     name: Code Security Check
