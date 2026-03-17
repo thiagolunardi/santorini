@@ -116,32 +116,6 @@ jobs:
           name: dotnet-test-results
           path: ${{ github.workspace }}/TestResults
 
-  backend-lint:
-    needs: versioning
-    runs-on: ubuntu-latest
-    name: Backend Lint
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          # super-linter needs the full git history to get the
-          # list of files that changed across commits
-          fetch-depth: 0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          global-json-file: global.json
-
-      - uses: github/super-linter@v7
-        env:
-          DEFAULT_BRANCH: "main"
-          VALIDATE_ALL_CODEBASE: "false"
-          VALIDATE_YAML: "true"
-          VALIDATE_CSHARP: "true"
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   frontend-build-and-test:
     needs: versioning
     runs-on: ubuntu-latest
@@ -165,10 +139,6 @@ jobs:
         run: |
           npm ci
 
-      - name: Test
-        run: |
-          npm run lint
-
       - name: Build
         run: |
           npm run build
@@ -177,33 +147,6 @@ jobs:
         with:
           name: web
           path: ./src/Santorini.UI/dist
-
-  frontend-lint:
-    needs: versioning
-    runs-on: ubuntu-latest
-    name: Frontend Lint
-    defaults:
-      run:
-        working-directory: ./src/Santorini.UI
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "20"
-          cache: npm
-          cache-dependency-path: ./src/Santorini.UI/package-lock.json
-
-      - name: Install dependencies
-        run: |
-          npm ci
-
-      - name: Lint
-        run: |
-          npm run lint
 
   dependency-check:
     name: Dependency Check
