@@ -18,6 +18,8 @@ permissions:
 
 env:
   DOTNET_NOLOGO: true
+  Azure__Location: germanywestcentral
+  Azure__ResourceGroup: santorini
   Azure__SubscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
 jobs:
