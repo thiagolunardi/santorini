@@ -354,3 +354,8 @@ ASALocalRun/
 .localhistory/
 
 # End of https://www.gitignore.io/api/visualstudio,visualstudiocode
+/src/Santorini.AppHost/aspire-output/env/env.bicep
+/src/Santorini.AppHost/aspire-output/env-acr/env-acr.bicep
+/src/Santorini.AppHost/aspire-output/main.bicep
+/src/Santorini.AppHost/aspire-output/webapi/webapi.bicep
+/src/Santorini.AppHost/aspire-output/webapp/webapp.bicep
