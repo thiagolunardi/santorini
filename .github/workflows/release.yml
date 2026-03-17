@@ -1,3 +1,4 @@
+---
 name: Release
 
 on:
@@ -51,12 +52,16 @@ jobs:
         run: dotnet build Santorini.slnx --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test Santorini.slnx --no-build --no-restore --configuration Release
+        run: >
+          dotnet test Santorini.slnx
+          --no-build
+          --no-restore
+          --configuration Release
 
       - name: Install Aspire CLI
         shell: bash
         run: |
-          dotnet tool update --global aspire || dotnet tool install --global aspire
+          dotnet tool update --global aspire.cli || dotnet tool install --global aspire.cli
           echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
 
       - name: Azure login
@@ -67,4 +72,6 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy AppHost
-        run: aspire deploy --project src/Santorini.AppHost/Santorini.AppHost.csproj
+        run: >
+          aspire deploy
+          --project src/Santorini.AppHost/Santorini.AppHost.csproj
