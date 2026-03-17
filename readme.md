@@ -112,7 +112,7 @@ This project deploys to **Azure Container Apps** using the [.NET Aspire CLI](htt
 az login
 
 # 2. Set the target subscription
-az account set --subscription 717ecf91-c347-410e-973b-be7735cfbefc
+az account set --subscription <your-subscription-id>
 
 # 3. Deploy using the Aspire CLI
 aspire deploy --project src/Santorini.AppHost/Santorini.AppHost.csproj
