@@ -95,6 +95,50 @@ dotnet test
 
 ---
 
+## Deploying to Azure
+
+This project deploys to **Azure Container Apps** using the [.NET Aspire CLI](https://learn.microsoft.com/dotnet/aspire/deployment/overview).
+
+### Prerequisites
+
+- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) installed and authenticated
+- [.NET Aspire CLI](https://learn.microsoft.com/dotnet/aspire/fundamentals/aspire-sdk-tooling) installed (`dotnet tool install -g aspire`)
+- An active Azure subscription
+
+### Deploy
+
+```bash
+# 1. Log in to Azure
+az login
+
+# 2. Set the target subscription
+az account set --subscription 717ecf91-c347-410e-973b-be7735cfbefc
+
+# 3. Deploy using the Aspire CLI
+aspire deploy --project src/Santorini.AppHost/Santorini.AppHost.csproj
+```
+
+The AppHost is pre-configured with:
+- **Location**: `germanywestcentral`
+- **Resource group**: `santorini`
+
+These defaults are used automatically. The Aspire CLI will prompt you to confirm or override them on first run. During
+publish, the UI is built from `src/Santorini.UI\Dockerfile` and deployed alongside the `webapi` as a Container App.
+
+### GitHub Actions release workflow
+
+The repository can deploy through `.github/workflows/release.yml`. Configure these secrets in the GitHub `PROD`
+environment for Azure federated authentication before enabling the workflow:
+
+- `AZURE_CLIENT_ID`
+- `AZURE_TENANT_ID`
+- `AZURE_SUBSCRIPTION_ID`
+
+The workflow restores, builds, tests, and then runs `aspire deploy --project src/Santorini.AppHost/Santorini.AppHost.csproj`
+against the preconfigured Azure resource group and location.
+
+---
+
 ## Project Structure
 
 ```

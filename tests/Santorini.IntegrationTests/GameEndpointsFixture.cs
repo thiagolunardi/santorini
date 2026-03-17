@@ -17,7 +17,7 @@ public class GameEndpointsFixture : IAsyncLifetime
         var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Santorini_AppHost>();
         App = await appHost.BuildAsync();
         await App.StartAsync();
-        Client = App.CreateHttpClient("api");
+        Client = App.CreateHttpClient("webapi");
     }
 
     public async Task DisposeAsync()

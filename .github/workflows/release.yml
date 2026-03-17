@@ -1,0 +1,70 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: release-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  DOTNET_NOLOGO: true
+
+jobs:
+  deploy-production:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    environment:
+      name: PROD
+      url: https://webapp.kindtree-8175587d.germanywestcentral.azurecontainerapps.io
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+
+      - name: Install frontend dependencies
+        working-directory: ./src/Santorini.UI
+        run: npm install
+
+      - name: Restore
+        run: dotnet restore Santorini.slnx
+
+      - name: Build
+        run: dotnet build Santorini.slnx --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test Santorini.slnx --no-build --no-restore --configuration Release
+
+      - name: Install Aspire CLI
+        shell: bash
+        run: |
+          dotnet tool update --global aspire || dotnet tool install --global aspire
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+      - name: Azure login
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy AppHost
+        run: aspire deploy --project src/Santorini.AppHost/Santorini.AppHost.csproj
