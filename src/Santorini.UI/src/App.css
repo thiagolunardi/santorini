@@ -153,3 +153,115 @@ button:hover {
   background-color: #00C853;
   transform: translateY(-2px);
 }
+
+/* MCP Config panel */
+.mcp-config {
+  width: 100%;
+  max-width: 680px;
+  background: #1a1a2e;
+  border: 2px solid #444;
+  border-radius: 12px;
+  padding: 24px 28px;
+  text-align: left;
+}
+
+.mcp-config-title {
+  margin: 0 0 6px;
+  font-size: 1.4rem;
+  color: #00E5FF;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.4);
+}
+
+.mcp-config-subtitle {
+  margin: 0 0 18px;
+  font-size: 0.95rem;
+  color: #aaa;
+}
+
+.mcp-config-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.mcp-tab-btn {
+  padding: 7px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: #2a2a3e;
+  color: #ccc;
+  border: 2px solid #555;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.mcp-tab-btn:hover {
+  background: #333355;
+  color: #fff;
+  transform: none;
+}
+
+.mcp-tab-btn.active {
+  background: #00E5FF;
+  color: #000;
+  border-color: #00E5FF;
+}
+
+.mcp-tab-btn.active:hover {
+  background: #00cfee;
+}
+
+.mcp-config-code-wrapper {
+  position: relative;
+}
+
+.mcp-copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: #333;
+  color: #00E676;
+  border: 1px solid #00E676;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.15s;
+  z-index: 1;
+}
+
+.mcp-copy-btn:hover {
+  background: #00E676;
+  color: #000;
+  transform: none;
+}
+
+.mcp-config-code {
+  background: #0d0d1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  white-space: pre;
+  overflow-x: auto;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.mcp-config-url {
+  margin: 14px 0 0;
+  font-size: 0.88rem;
+  color: #888;
+}
+
+.mcp-config-url code {
+  color: #00E5FF;
+  background: #0d0d1a;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import './App.css'
 import Board from './components/Board'
+import McpConfig from './components/McpConfig'
 
 interface GameState {
   board: Array<{
@@ -109,6 +110,8 @@ function App() {
         {selectedWorker && !pendingMove && <p>Select where to move the worker (Drag and Drop)</p>}
         {pendingMove && <p>Click an adjacent square to build!</p>}
       </div>
+
+      <McpConfig />
     </div>
   )
 }
