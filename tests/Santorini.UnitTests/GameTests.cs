@@ -636,4 +636,113 @@ public class GameTests
                     $"build at ({m.BuildAt.X},{m.BuildAt.Y}) must be adjacent to post-move ({m.MoveTo.X},{m.MoveTo.Y})");
         });
     }
+
+    [Fact]
+    public void GetAvailableMoves_returns_empty_when_all_workers_unplaced()
+    {
+        var game = new Game();
+        game.TryAddPlayer("Player1");
+        game.TryAddPlayer("Player2");
+        // Place only Player1's workers; Player2's workers remain unplaced
+        game.TryAddWorker("Player1", 1, new(0, 0));
+        game.TryAddWorker("Player1", 2, new(4, 4));
+
+        var moves = game.GetAvailableMoves("Player2").ToList();
+
+        moves.Should().BeEmpty("unplaced workers have no CurrentLand and must be skipped");
+    }
+
+    [Fact]
+    public void GetAvailableMoves_includes_moves_for_both_workers()
+    {
+        var game = SetupStandardGame();
+
+        var moves = game.GetAvailableMoves("Player1").ToList();
+
+        moves.Should().Contain(m => m.WorkerNumber == 1, "Worker 1 must contribute moves");
+        moves.Should().Contain(m => m.WorkerNumber == 2, "Worker 2 must contribute moves");
+    }
+
+    [Fact]
+    public void GetAvailableMoves_excludes_moves_to_own_workers_cell()
+    {
+        var game = new Game();
+        game.TryAddPlayer("Player1");
+        game.TryAddPlayer("Player2");
+        // Worker 1 and Worker 2 of Player1 are adjacent to each other
+        game.TryAddWorker("Player1", 1, new(0, 0));
+        game.TryAddWorker("Player1", 2, new(1, 1));
+        game.TryAddWorker("Player2", 1, new(4, 0));
+        game.TryAddWorker("Player2", 2, new(4, 4));
+
+        var moves = game.GetAvailableMoves("Player1").ToList();
+
+        moves.Should().NotContain(m => m.WorkerNumber == 1 && m.MoveTo.X == 1 && m.MoveTo.Y == 1,
+            "Worker 1 cannot move onto its own teammate's cell");
+        moves.Should().NotContain(m => m.WorkerNumber == 2 && m.MoveTo.X == 0 && m.MoveTo.Y == 0,
+            "Worker 2 cannot move onto its own teammate's cell");
+    }
+
+    [Fact]
+    public void GetAvailableMoves_worker_completely_surrounded_returns_empty()
+    {
+        var game = new Game();
+        game.TryAddPlayer("Player1");
+        game.TryAddPlayer("Player2");
+        // Worker 1 at center (2,2); dome all 8 neighbours so no move is possible
+        game.TryAddWorker("Player1", 1, new(2, 2));
+        game.TryAddWorker("Player1", 2, new(4, 4));
+        game.TryAddWorker("Player2", 1, new(0, 0));
+        game.TryAddWorker("Player2", 2, new(0, 4));
+
+        // Dome every cell adjacent to (2,2) by building 4 levels
+        foreach (var (nx, ny) in new[] { (1,1),(1,2),(1,3),(2,1),(2,3),(3,1),(3,2),(3,3) })
+        {
+            var tower = new Tower();
+            tower.RaiseLevel(); tower.RaiseLevel(); tower.RaiseLevel(); // level 4 = dome
+            game.Island.TryAddPiece(tower, new(nx, ny));
+        }
+
+        var moves = game.GetAvailableMoves("Player1")
+            .Where(m => m.WorkerNumber == 1)
+            .ToList();
+
+        moves.Should().BeEmpty("Worker 1 is surrounded by domed cells and has no valid move");
+    }
+
+    [Fact]
+    public void GetAvailableMoves_allows_build_at_original_position()
+    {
+        var game = SetupStandardGame();
+
+        // Worker 1 is at (0,0). Any move to an adjacent cell should offer a build back at (0,0).
+        var moves = game.GetAvailableMoves("Player1").ToList();
+
+        moves.Should().Contain(m => m.WorkerNumber == 1 && m.BuildAt.X == 0 && m.BuildAt.Y == 0,
+            "after moving away from (0,0), the worker must be able to build back on its original cell");
+    }
+
+    [Fact]
+    public void GetAvailableMoves_includes_all_build_positions_adjacent_to_post_move_position()
+    {
+        var game = SetupStandardGame();
+
+        // Worker 1 is at (0,0). When it moves to (1,1), valid build cells are all
+        // cells within 1 step of (1,1) except (1,1) itself: (0,0),(0,1),(0,2),(1,0),(1,2),(2,0),(2,1),(2,2).
+        var movesViaWorker1To11 = game.GetAvailableMoves("Player1")
+            .Where(m => m is { WorkerNumber: 1, MoveTo: { X: 1, Y: 1 } })
+            .ToList();
+
+        movesViaWorker1To11.Should().NotBeEmpty("Worker 1 should be able to move to (1,1)");
+
+        var buildTargets = movesViaWorker1To11.Select(m => (m.BuildAt.X, m.BuildAt.Y)).ToHashSet();
+
+        // All cells adjacent to (1,1) and within board bounds (excluding (1,1) itself)
+        var expectedBuilds = new[] { (0,0),(0,1),(0,2),(1,0),(1,2),(2,0),(2,1),(2,2) };
+        foreach (var (bx, by) in expectedBuilds)
+        {
+            buildTargets.Should().Contain((bx, by),
+                $"build at ({bx},{by}) is adjacent to post-move position (1,1) and must be offered");
+        }
+    }
 }

@@ -49,7 +49,7 @@ public class Game
                 var moveToY = currentCoordinate.Y + dy;
                 if (!Island.IsValidCoordinate(moveToX, moveToY)) continue;
 
-                var moveTo = new Coordinate(currentCoordinate.X + dx, currentCoordinate.Y + dy);
+                var moveTo = new Coordinate(moveToX, moveToY);
 
                 // Try all 8 adjacent cells for build (relative to post-move position)
                 for (var adjacentX = -1; adjacentX <= 1; adjacentX++)
@@ -57,11 +57,11 @@ public class Game
                 {
                     if (adjacentX == 0 && adjacentY == 0) continue;
 
-                    var buildAtX = currentCoordinate.X + adjacentX;
-                    var buildAtY = currentCoordinate.Y + adjacentY;
+                    var buildAtX = moveToX + adjacentX;
+                    var buildAtY = moveToY + adjacentY;
                     if (!Island.IsValidCoordinate(buildAtX, buildAtY)) continue;
                     
-                    var buildAt = new Coordinate(currentCoordinate.X + adjacentX, currentCoordinate.Y + adjacentY);
+                    var buildAt = new Coordinate(moveToX + adjacentX, moveToY + adjacentY);
 
                     // Use canonical player name to ensure case-sensitive matching downstream
                     var command = new MoveCommand(player.Name, worker.Number, moveTo, buildAt);
